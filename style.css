@@ -1,0 +1,144 @@
+:root {
+  --bg: #0f1420;
+  --card: #171c2a;
+  --text: #eaf1ff;
+  --muted: #a7b0c4;
+  --accent: #4aa9ff;
+  --danger: #ff4d4f;
+
+  /* Estados */
+  --rojo: #e53935;
+  --amarillo: #fbc02d;
+  --verde: #43a047;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  margin: 0;
+}
+
+.app-header {
+  padding: 16px;
+  text-align: center;
+  background: linear-gradient(180deg, #101629, #0f1420);
+  border-bottom: 1px solid #1f2740;
+}
+.app-header h1 { margin: 0 0 6px; }
+.app-header p { margin: 0; color: var(--muted); }
+
+.controls {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.add-form {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px;
+  gap: 8px;
+}
+.add-form input, .add-form button,
+.filters input, .filters select, .filters button {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2b3553;
+  background: var(--card);
+  color: var(--text);
+}
+.add-form button {
+  background: var(--accent);
+  border-color: #2d6ea8;
+  color: #041424;
+  font-weight: 700;
+  cursor: pointer;
+}
+.add-form button:hover { filter: brightness(1.05); }
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 160px 180px 140px;
+  gap: 8px;
+}
+.filters .danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: #b3261e;
+  cursor: pointer;
+}
+.filters .danger:hover { filter: brightness(1.05); }
+
+.empty {
+  margin: 24px;
+  padding: 16px;
+  border: 1px dashed #2b3553;
+  border-radius: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.student-list {
+  list-style: none;
+  padding: 0 16px 24px;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.student-item {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid #253257;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.state-badge {
+  width: 100%;
+  height: 42px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 800;
+  color: #091017;
+  letter-spacing: 0.5px;
+}
+
+.state-ESPERA { background: var(--rojo); }
+.state-BUSCA { background: var(--amarillo); }
+.state-AVISADO { background: var(--verde); }
+
+.student-info {
+  display: grid;
+  gap: 4px;
+}
+.student-name { font-size: 1rem; }
+.student-course { color: var(--muted); font-size: 0.9rem; }
+
+.student-actions {
+  display: flex;
+  gap: 6px;
+}
+.student-actions button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #2b3553;
+  background: #1b2236;
+  color: var(--text);
+  cursor: pointer;
+}
+.student-actions button:hover { filter: brightness(1.08); }
+
+@media (max-width: 720px) {
+  .add-form {
+    grid-template-columns: 1fr 1fr 120px;
+  }
+  .student-item {
+    grid-template-columns: 110px 1fr auto;
+  }
+}

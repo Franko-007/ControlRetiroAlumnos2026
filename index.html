@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎒 Control de Retiro Escolar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🎒 Control de Retiro Escolar</h1>
+    <p>Toca un alumno para cambiar su estado.</p>
+  </header>
+
+  <section class="controls">
+    <form id="addForm" class="add-form">
+      <input type="text" id="nameInput" placeholder="Nombre y apellido" required />
+      <input type="text" id="courseInput" placeholder="Curso (ej: 4°B)" required />
+      <button type="submit">Agregar a la lista</button>
+    </form>
+
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre o curso..." />
+      <select id="courseFilter">
+        <option value="">Todos los cursos</option>
+      </select>
+      <select id="statusFilter">
+        <option value="">Todos los estados</option>
+        <option value="ESPERA">En espera (Rojo)</option>
+        <option value="BUSCA">En busca (Amarillo)</option>
+        <option value="AVISADO">Avisado (Verde)</option>
+      </select>
+      <button id="clearAllBtn" class="danger">Vaciar lista</button>
+    </div>
+  </section>
+
+  <main>
+    <div id="emptyState" class="empty">
+      <p>❌ La lista está vacía. Usa el formulario para añadir alumnos.</p>
+    </div>
+
+    <ul id="studentList" class="student-list" aria-live="polite"></ul>
+  </main>
+
+  <footer class="app-footer">
+    <small>© 2025 Sistema de Retiro Rápido</small>
+  </footer>
+
+  <template id="studentItemTemplate">
+    <li class="student-item">
+      <button class="state-badge" title="Cambiar estado"></button>
+      <div class="student-info">
+        <strong class="student-name"></strong>
+        <span class="student-course"></span>
+      </div>
+      <div class="student-actions">
+        <button class="up-btn" title="Mover arriba">▲</button>
+        <button class="down-btn" title="Mover abajo">▼</button>
+        <button class="delete-btn" title="Eliminar">🗑️</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
