@@ -19,20 +19,28 @@
             <input type="text" id="nameInput" placeholder="Nombre y apellido" required>
             
             <select id="courseInput" required style="background: var(--card); color: var(--text);">
-                <option value="" disabled selected>Curso</option>
+                <option value="" disabled selected>Seleccionar Curso</option>
                 <optgroup label="Párvulos">
                     <option value="Pre Kinder A">Pre Kinder A</option>
+                    <option value="Pre Kinder B">Pre Kinder B</option>
                     <option value="Kinder A">Kinder A</option>
+                    <option value="Kinder B">Kinder B</option>
                 </optgroup>
                 <optgroup label="Básica">
-                    <option value="1° Básico A">1° Básico A</option>
-                    <option value="2° Básico A">2° Básico A</option>
-                    <option value="3° Básico A">3° Básico A</option>
-                    <option value="4° Básico A">4° Básico A</option>
+                    <option value="1° Básico A">1° Básico A</option><option value="1° Básico B">1° Básico B</option>
+                    <option value="2° Básico A">2° Básico A</option><option value="2° Básico B">2° Básico B</option>
+                    <option value="3° Básico A">3° Básico A</option><option value="3° Básico B">3° Básico B</option>
+                    <option value="4° Básico A">4° Básico A</option><option value="4° Básico B">4° Básico B</option>
+                    <option value="5° Básico A">5° Básico A</option><option value="5° Básico B">5° Básico B</option>
+                    <option value="6° Básico A">6° Básico A</option><option value="6° Básico B">6° Básico B</option>
+                    <option value="7° Básico A">7° Básico A</option><option value="7° Básico B">7° Básico B</option>
+                    <option value="8° Básico A">8° Básico A</option><option value="8° Básico B">8° Básico B</option>
                 </optgroup>
                 <optgroup label="Media">
-                    <option value="I° Medio A">I° Medio A</option>
-                    <option value="II° Medio A">II° Medio A</option>
+                    <option value="I° Medio A">I° Medio A</option><option value="I° Medio B">I° Medio B</option>
+                    <option value="II° Medio A">II° Medio A</option><option value="II° Medio B">II° Medio B</option>
+                    <option value="III° Medio A">III° Medio A</option><option value="III° Medio B">III° Medio B</option>
+                    <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
                 </optgroup>
             </select>
             <button type="submit">Agregar</button>
@@ -46,7 +54,7 @@
     </main>
 
     <ul id="studentList" class="student-list"></ul>
-    <div id="emptyState" class="empty">❌ Sin alumnos activos. [cite: 11]</div>
+    <div id="emptyState" class="empty">❌ Sin alumnos activos.</div>
 
     <hr style="border: 0; border-top: 1px solid #2b3553; margin: 20px 16px;">
     
