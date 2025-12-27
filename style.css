@@ -4,114 +4,136 @@
     --text: #eaf1ff;
     --muted: #8b9bb4;
     --accent: #4e73df;
-    --rojo: #ff4b5c;
-    --amarillo: #ffca28;
-    --verde: #00e676;
+    --rojo: #ff3b30;
+    --amarillo: #ffcc00;
+    --verde: #34c759;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
 
-body { background: var(--bg); color: var(--text); padding: 10px; }
+body { background: var(--bg); color: var(--text); padding: 15px; }
 
-.app-header { text-align: center; padding: 20px 0; }
-.app-header h1 { font-size: 1.5rem; color: var(--accent); }
-.app-header p { color: var(--muted); font-size: 0.9rem; }
-
-.controls {
-    background: var(--card);
-    padding: 16px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.add-form { display: flex; flex-direction: column; gap: 10px; }
-
-/* Ajuste para que los inputs se vean modernos */
-input, select, button {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #2b3553;
-    background: #1d2335;
-    color: var(--text);
-    font-size: 1rem;
-    outline: none;
-}
-
-input:focus, select:focus { border-color: var(--accent); }
-
-button[type="submit"] {
-    background: var(--accent);
-    color: white;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button[type="submit"]:hover { opacity: 0.9; transform: translateY(-1px); }
-
-/* Filtros y contadores */
+/* --- CONTADORES SUPERIORES --- */
 .filters {
     display: flex;
-    justify-content: space-around;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #2b3553;
-    font-size: 0.85rem;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
 }
 
-/* Lista de alumnos */
-.student-list { list-style: none; margin-top: 10px; }
+.filters span {
+    background: var(--card);
+    padding: 10px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 1px solid #2b3553;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
 
+.filters b { font-size: 1.2rem; }
+
+/* --- TARJETAS DE ALUMNOS --- */
 .student-item {
     background: var(--card);
     display: flex;
     align-items: center;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    border-left: 5px solid transparent;
-    animation: fadeIn 0.3s ease;
+    padding: 18px; /* Más espacioso */
+    border-radius: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+    border-left: 8px solid transparent; /* Borde lateral más grueso */
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+/* Colores dinámicos por estado */
+.student-item:has(.state-ESPERA) { border-left-color: var(--rojo); }
+.student-item:has(.state-BUSCA) { border-left-color: var(--amarillo); }
+.student-item:has(.state-AVISADO) { border-left-color: var(--verde); }
 
+/* --- BOTONES DE ESTADO (BADGES) --- */
 .state-badge {
-    width: 85px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    border-radius: 6px;
+    width: 110px; /* Más ancho */
+    height: 45px; /* Más alto */
+    font-size: 0.85rem; /* Letra más grande */
+    font-weight: 900;
+    border-radius: 10px;
     border: none;
-    padding: 6px 0;
-    margin-right: 12px;
     cursor: pointer;
     text-transform: uppercase;
+    margin-right: 18px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Colores de estados */
-.state-ESPERA { background: var(--rojo); color: white; border-left-color: var(--rojo); }
-.state-BUSCA { background: var(--amarillo); color: #222; }
-.state-AVISADO { background: var(--verde); color: #222; }
+.state-ESPERA { 
+    background: var(--rojo); 
+    color: white; 
+    box-shadow: 0 0 15px rgba(255, 59, 48, 0.3);
+}
 
+.state-BUSCA { 
+    background: var(--amarillo); 
+    color: #111; 
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+}
+
+.state-AVISADO { 
+    background: var(--verde); 
+    color: white; 
+    box-shadow: 0 0 15px rgba(52, 199, 89, 0.3);
+    animation: pulse-green 2s infinite; /* El verde parpadea suave para avisar */
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7); }
+    70% { box-shadow: 0 0 0 12px rgba(52, 199, 89, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+}
+
+/* --- TEXTOS --- */
 .student-info { flex-grow: 1; }
-.student-name { font-weight: bold; font-size: 1.1rem; }
-.student-course { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+.student-name { font-weight: 700; font-size: 1.25rem; margin-bottom: 4px; }
+.student-course { color: var(--muted); font-size: 0.95rem; font-weight: 500; }
 
-.student-actions { display: flex; gap: 10px; align-items: center; }
+/* --- BOTONES DE ACCIÓN --- */
+.done-btn {
+    background: var(--verde);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
 
-.done-btn { background: var(--verde); border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
-.del-btn { background: transparent; border: none; cursor: pointer; font-size: 1.2rem; filter: grayscale(1); }
-.del-btn:hover { filter: grayscale(0); }
+.done-btn:hover { transform: scale(1.1); }
 
-.empty { text-align: center; padding: 40px; color: var(--muted); }
-.separator { border: 0; border-top: 1px solid #2b3553; margin: 25px 0; }
+/* --- FORMULARIO Y OTROS --- */
+.add-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas para que no sea tan largo */
+    gap: 12px;
+}
 
-.app-header.small h2 { font-size: 1.1rem; color: var(--muted); }
-.app-footer { text-align: center; padding: 30px; color: var(--muted); font-size: 0.8rem; }
+#nameInput { grid-column: span 2; } /* El nombre ocupa toda la fila */
+button[type="submit"] { grid-column: span 2; height: 50px; font-size: 1.1rem; }
 
-/* Optimización para móviles */
-@media (max-width: 480px) {
-    .add-form { gap: 8px; }
-    .student-name { font-size: 1rem; }
-    .state-badge { width: 70px; font-size: 0.6rem; }
+/* Mobile */
+@media (max-width: 600px) {
+    .add-form { grid-template-columns: 1fr; }
+    #nameInput, button[type="submit"] { grid-column: span 1; }
+    .state-badge { width: 90px; font-size: 0.75rem; }
+    .student-name { font-size: 1.1rem; }
 }
