@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Retiro Escolar - Pro</title>
+    <title>Control de Retiro Escolar NSG</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,82 +11,85 @@
     <audio id="sound-status" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 
     <header class="app-header">
-        <h1>🎒 Control de Retiro Escolar NSG</h1>
-        <p>Liceo Bicentenario Nuestra Señora de Guadalupe</p>
+        <div class="header-content">
+            <span class="logo">🎒</span>
+            <h1>Control de Retiro Escolar NSG</h1>
+        </div>
+        <p>Toca un alumno para cambiar su estado.</p>
     </header>
 
-    <main class="controls">
-        <form id="addForm" class="add-form">
+    <main class="container">
+        <form id="addForm" class="controls">
             <input type="text" id="nameInput" placeholder="Nombre y apellido" required>
             
-            <select id="courseInput" required>
-                <option value="" disabled selected>Curso</option>
-                <optgroup label="Párvulos">
-                    <option value="Pre Kinder A">Pre Kinder A</option>
-                    <option value="Pre Kinder B">Pre Kinder B</option>
-                    <option value="Kinder A">Kinder A</option>
-                    <option value="Kinder B">Kinder B</option>
-                </optgroup>
-                <optgroup label="Básica">
-                    <option value="1° Básico A">1° Básico A</option><option value="1° Básico B">1° Básico B</option>
-                    <option value="2° Básico A">2° Básico A</option><option value="2° Básico B">2° Básico B</option>
-                    <option value="3° Básico A">3° Básico A</option><option value="3° Básico B">3° Básico B</option>
-                    <option value="4° Básico A">4° Básico A</option><option value="4° Básico B">4° Básico B</option>
-                    <option value="5° Básico A">5° Básico A</option><option value="5° Básico B">5° Básico B</option>
-                    <option value="6° Básico A">6° Básico A</option><option value="6° Básico B">6° Básico B</option>
-                    <option value="7° Básico A">7° Básico A</option><option value="7° Básico B">7° Básico B</option>
-                    <option value="8° Básico A">8° Básico A</option><option value="8° Básico B">8° Básico B</option>
-                </optgroup>
-                <optgroup label="Media">
-                    <option value="I° Medio A">I° Medio A</option><option value="I° Medio B">I° Medio B</option>
-                    <option value="II° Medio A">II° Medio A</option><option value="II° Medio B">II° Medio B</option>
-                    <option value="III° Medio A">III° Medio A</option><option value="III° Medio B">III° Medio B</option>
-                    <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
-                </optgroup>
-            </select>
+            <div class="row">
+                <select id="courseInput" required>
+                    <option value="" disabled selected>Curso</option>
+                    <optgroup label="Párvulos">
+                        <option value="Pre Kinder A">Pre Kinder A</option><option value="Pre Kinder B">Pre Kinder B</option>
+                        <option value="Kinder A">Kinder A</option><option value="Kinder B">Kinder B</option>
+                    </optgroup>
+                    <optgroup label="Básica">
+                        <option value="1° Básico A">1° Básico A</option><option value="1° Básico B">1° Básico B</option>
+                        <option value="2° Básico A">2° Básico A</option><option value="2° Básico B">2° Básico B</option>
+                        <option value="3° Básico A">3° Básico A</option><option value="3° Básico B">3° Básico B</option>
+                        <option value="4° Básico A">4° Básico A</option><option value="4° Básico B">4° Básico B</option>
+                        <option value="5° Básico A">5° Básico A</option><option value="5° Básico B">5° Básico B</option>
+                        <option value="6° Básico A">6° Básico A</option><option value="6° Básico B">6° Básico B</option>
+                        <option value="7° Básico A">7° Básico A</option><option value="7° Básico B">7° Básico B</option>
+                        <option value="8° Básico A">8° Básico A</option><option value="8° Básico B">8° Básico B</option>
+                    </optgroup>
+                    <optgroup label="Media">
+                        <option value="I° Medio A">I° Medio A</option><option value="I° Medio B">I° Medio B</option>
+                        <option value="II° Medio A">II° Medio A</option><option value="II° Medio B">II° Medio B</option>
+                        <option value="III° Medio A">III° Medio A</option><option value="III° Medio B">III° Medio B</option>
+                        <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
+                    </optgroup>
+                </select>
 
-            <select id="reasonInput" required>
-                <option value="" disabled selected>Motivo</option>
-                <option value="Cita Médica">Cita Médica</option>
-                <option value="Trámite Personal">Trámite Personal</option>
-                <option value="Enfermedad">Enfermedad</option>
-                <option value="Retiro Anticipado">Retiro Anticipado</option>
-            </select>
+                <select id="reasonInput" required>
+                    <option value="" disabled selected>Motivo</option>
+                    <option value="Cita Médica">Cita Médica</option>
+                    <option value="Trámite Personal">Trámite Personal</option>
+                    <option value="Enfermedad">Enfermedad</option>
+                    <option value="Retiro Anticipado">Retiro Anticipado</option>
+                </select>
+            </div>
 
-            <button type="submit">Agregar</button>
+            <button type="submit" class="add-btn">Agregar</button>
+
+            <div class="filters">
+                <span><i class="dot red"></i> Espera: <b id="countEspera">0</b></span>
+                <span><i class="dot yellow"></i> Busca: <b id="countBusca">0</b></span>
+                <span><i class="dot green"></i> Avisado: <b id="countAvisado">0</b></span>
+            </div>
         </form>
 
-        <div class="filters">
-            <span><b style="color: var(--rojo);">●</b> Espera: <b id="countEspera">0</b></span>
-            <span><b style="color: var(--amarillo);">●</b> Busca: <b id="countBusca">0</b></span>
-            <span><b style="color: var(--verde);">●</b> Avisado: <b id="countAvisado">0</b></span>
+        <ul id="studentList" class="student-list"></ul>
+        <div id="emptyState" class="empty-card">
+            <span>❌ Sin alumnos activos.</span>
+        </div>
+
+        <div class="history-section">
+            <h2>📜 Historial de Retirados (Hoy)</h2>
+            <ul id="historyList" class="student-list"></ul>
         </div>
     </main>
 
-    <ul id="studentList" class="student-list"></ul>
-    <div id="emptyState" class="empty">❌ Sin alumnos activos.</div>
-
-    <hr class="separator">
-    
-    <header class="app-header small">
-        <h2>📜 Historial de Retirados (Hoy)</h2>
-    </header>
-    <ul id="historyList" class="student-list"></ul>
-
     <footer class="app-footer">
-        <p>© NSG 2026 Derechos Reservados - Creado por Franco</p>
+        <p>2026 Derechos Reservados - Por Franco</p>
     </footer>
 
     <template id="itemTemplate">
         <li class="student-item">
-            <button class="state-badge"></button>
+            <div class="state-badge"></div>
             <div class="student-info">
                 <div class="student-name"></div>
                 <div class="student-course"></div>
             </div>
             <div class="student-actions">
-                <button class="done-btn" title="Finalizar retiro">✅</button>
-                <button class="del-btn" title="Eliminar">🗑️</button>
+                <button class="done-btn">✅</button>
+                <button class="del-btn">🗑️</button>
             </div>
         </li>
     </template>
