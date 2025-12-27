@@ -1,67 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🎒 Control de Retiro Escolar 2026</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Control de Retiro Escolar</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="app-header">
-    <h1>🎒 Control de Retiro Escolar</h1>
-    <p>Toca un alumno para cambiar su estado.</p>
-  </header>
+    <audio id="sound-add" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
+    <audio id="sound-status" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 
-  <section class="controls">
-    <form id="addForm" class="add-form">
-      <input type="text" id="nameInput" placeholder="Nombre y apellido" required />
-      <input type="text" id="courseInput" placeholder="Curso (ej: 4°B)" required />
-      <button type="submit">Agregar a la lista</button>
-    </form>
+    <header class="app-header">
+        <h1>🎒 Control de Retiro Escolar</h1>
+        <p>Toca un alumno para cambiar su estado.</p>
+    </header>
 
-    <div class="filters">
-      <input type="text" id="searchInput" placeholder="Buscar por nombre o curso..." />
-      <select id="courseFilter">
-        <option value="">Todos los cursos</option>
-      </select>
-      <select id="statusFilter">
-        <option value="">Todos los estados</option>
-        <option value="ESPERA">En espera (Rojo)</option>
-        <option value="BUSCA">En busca (Amarillo)</option>
-        <option value="AVISADO">Avisado (Verde)</option>
-      </select>
-      <button id="clearAllBtn" class="danger">Vaciar lista</button>
-    </div>
-  </section>
+    <main class="controls">
+        <form id="addForm" class="add-form">
+            <input type="text" id="nameInput" placeholder="Nombre y apellido" required>
+            
+            <select id="courseInput" required style="padding: 10px 12px; border-radius: 8px; border: 1px solid #2b3553; background: #171c2a; color: #eaf1ff;">
+                <option value="" disabled selected>Curso</option>
+                <optgroup label="Párvulos">
+                    <option value="Pre Kinder A">Pre Kinder A</option><option value="Pre Kinder B">Pre Kinder B</option>
+                    <option value="Kinder A">Kinder A</option><option value="Kinder B">Kinder B</option>
+                </optgroup>
+                <optgroup label="Básica">
+                    <option value="1° Básico A">1° Básico A</option><option value="1° Básico B">1° Básico B</option>
+                    <option value="2° Básico A">2° Básico A</option><option value="2° Básico B">2° Básico B</option>
+                    <option value="3° Básico A">3° Básico A</option><option value="3° Básico B">3° Básico B</option>
+                    <option value="4° Básico A">4° Básico A</option><option value="4° Básico B">4° Básico B</option>
+                    <option value="5° Básico A">5° Básico A</option><option value="5° Básico B">5° Básico B</option>
+                    <option value="6° Básico A">6° Básico A</option><option value="6° Básico B">6° Básico B</option>
+                    <option value="7° Básico A">7° Básico A</option><option value="7° Básico B">7° Básico B</option>
+                    <option value="8° Básico A">8° Básico A</option><option value="8° Básico B">8° Básico B</option>
+                </optgroup>
+                <optgroup label="Media">
+                    <option value="I° Medio A">I° Medio A</option><option value="I° Medio B">I° Medio B</option>
+                    <option value="II° Medio A">II° Medio A</option><option value="II° Medio B">II° Medio B</option>
+                    <option value="III° Medio A">III° Medio A</option><option value="III° Medio B">III° Medio B</option>
+                    <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
+                </optgroup>
+            </select>
+            <button type="submit">Agregar</button>
+        </form>
 
-  <main>
-    <div id="emptyState" class="empty">
-      <p>❌ La lista está vacía. Usa el formulario para añadir alumnos.</p>
-    </div>
+        <div class="filters" style="justify-content: center; display: flex; gap: 20px;">
+            <span><b style="color: var(--rojo);">●</b> Espera: <b id="countEspera">0</b></span>
+            <span><b style="color: var(--amarillo);">●</b> Busca: <b id="countBusca">0</b></span>
+            <span><b style="color: var(--verde);">●</b> Avisado: <b id="countAvisado">0</b></span>
+        </div>
+    </main>
 
-    <ul id="studentList" class="student-list" aria-live="polite"></ul>
-  </main>
+    <ul id="studentList" class="student-list"></ul>
+    <div id="emptyState" class="empty">❌ Sin alumnos activos.</div>
 
-  <footer class="app-footer">
-    <small>© 2026 Sistema de Retiro Rápido ©  Por Franco</small><br>
+    <hr style="border: 0; border-top: 1px solid #2b3553; margin: 20px 16px;">
     
-  </footer>
+    <header class="app-header" style="background: none; border: none; text-align: left; padding-left: 16px;">
+        <h2>📜 Historial de Retirados (Hoy)</h2>
+    </header>
+    <ul id="historyList" class="student-list"></ul>
 
-  <template id="studentItemTemplate">
-    <li class="student-item">
-      <button class="state-badge" title="Cambiar estado"></button>
-      <div class="student-info">
-        <strong class="student-name"></strong>
-        <span class="student-course"></span>
-      </div>
-      <div class="student-actions">
-        <button class="up-btn" title="Mover arriba">▲</button>
-        <button class="down-btn" title="Mover abajo">▼</button>
-        <button class="delete-btn" title="Eliminar">🗑️</button>
-      </div>
-    </li>
-  </template>
+    <footer class="app-header" style="margin-top: 40px; border-top: 1px solid #1f2740; border-bottom: none;">
+        <p>© 2026 Derechos Reservados - Por Franco</p>
+    </footer>
 
-  <script src="script.js"></script>
+    <template id="itemTemplate">
+        <li class="student-item">
+            <button class="state-badge"></button>
+            <div class="student-info">
+                <div class="student-name"></div>
+                <div class="student-course"></div>
+            </div>
+            <div class="student-actions">
+                <button class="done-btn" style="display:none; background: var(--verde); border:none; border-radius:8px; padding: 5px 10px; cursor:pointer;">✅</button>
+                <button class="del-btn" style="background: transparent; border:none; cursor:pointer; font-size: 1.2rem;">🗑️</button>
+            </div>
+        </li>
+    </template>
+
+    <script src="script.js"></script>
 </body>
 </html>
