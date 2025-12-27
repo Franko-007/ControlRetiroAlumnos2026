@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control de Retiro Escolar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Retiro Escolar - Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,15 +12,15 @@
 
     <header class="app-header">
         <h1>🎒 Control de Retiro Escolar NSG</h1>
-        <p>Toca un alumno para cambiar su estado.</p>
+        <p>Sincronización en tiempo real (Multiequipo)</p>
     </header>
 
     <main class="controls">
         <form id="addForm" class="add-form">
             <input type="text" id="nameInput" placeholder="Nombre y apellido" required>
             
-            <select id="courseInput" required style="background: var(--card); color: var(--text);">
-                <option value="" disabled selected>Seleccionar Curso</option>
+            <select id="courseInput" required>
+                <option value="" disabled selected>Curso</option>
                 <optgroup label="Párvulos">
                     <option value="Pre Kinder A">Pre Kinder A</option>
                     <option value="Pre Kinder B">Pre Kinder B</option>
@@ -43,10 +44,19 @@
                     <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
                 </optgroup>
             </select>
+
+            <select id="reasonInput" required>
+                <option value="" disabled selected>Motivo</option>
+                <option value="Cita Médica">Cita Médica</option>
+                <option value="Trámite Personal">Trámite Personal</option>
+                <option value="Enfermedad">Enfermedad</option>
+                <option value="Retiro Anticipado">Retiro Anticipado</option>
+            </select>
+
             <button type="submit">Agregar</button>
         </form>
 
-        <div class="filters" style="justify-content: center; display: flex; gap: 20px;">
+        <div class="filters">
             <span><b style="color: var(--rojo);">●</b> Espera: <b id="countEspera">0</b></span>
             <span><b style="color: var(--amarillo);">●</b> Busca: <b id="countBusca">0</b></span>
             <span><b style="color: var(--verde);">●</b> Avisado: <b id="countAvisado">0</b></span>
@@ -56,15 +66,15 @@
     <ul id="studentList" class="student-list"></ul>
     <div id="emptyState" class="empty">❌ Sin alumnos activos.</div>
 
-    <hr style="border: 0; border-top: 1px solid #2b3553; margin: 20px 16px;">
+    <hr class="separator">
     
-    <header class="app-header" style="background: none; border: none; text-align: left; padding-left: 16px;">
+    <header class="app-header small">
         <h2>📜 Historial de Retirados (Hoy)</h2>
     </header>
     <ul id="historyList" class="student-list"></ul>
 
-    <footer class="app-header" style="margin-top: 40px; border-top: 1px solid #1f2740;">
-        <p>© 2026 Derechos Reservados - Por Franco</p>
+    <footer class="app-footer">
+        <p>© 2026 Sistema de Gestión Escolar - Franco</p>
     </footer>
 
     <template id="itemTemplate">
@@ -75,8 +85,8 @@
                 <div class="student-course"></div>
             </div>
             <div class="student-actions">
-                <button class="done-btn" style="display:none; background: var(--verde); border:none; border-radius:8px; padding: 5px 10px; cursor:pointer;">✅</button>
-                <button class="del-btn" style="background: transparent; border:none; cursor:pointer; font-size: 1.2rem;">🗑️</button>
+                <button class="done-btn" title="Finalizar retiro">✅</button>
+                <button class="del-btn" title="Eliminar">🗑️</button>
             </div>
         </li>
     </template>
