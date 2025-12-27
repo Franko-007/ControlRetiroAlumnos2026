@@ -1,6 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
 
-// 1. MEMORIA LOCAL PERSISTENTE
+// 1. MEMORIA COMPARTIDA
 let students = JSON.parse(localStorage.getItem('retiros_f_activos')) || [];
 let history = JSON.parse(localStorage.getItem('retiros_f_historial')) || [];
 
@@ -9,32 +9,29 @@ function playSound(id) {
     if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
 }
 
-// 2. CARGA INTELIGENTE (Mezcla, no reemplaza)
+// 2. SINCRONIZACIÓN TOTAL (Para ver cambios de otros equipos)
 async function loadFromCloud() {
     try {
         const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
         const data = await res.json();
         
-        // PROTECCIÓN: Solo procesamos si la nube trae un array válido
+        // REGLA DE ORO: Solo reemplazamos si la nube trae un arreglo con datos.
+        // Esto permite que si alguien agrega un alumno en el Equipo A, aparezca en el Equipo B.
         if (Array.isArray(data) && data.length > 0) {
-            const cloudActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
-            const cloudHistorial = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
+            const nuevosActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
+            const nuevoHistorial = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
 
-            // MEZCLA SEGURA: Agregamos lo que no tenemos, pero no borramos lo que ya está en pantalla
-            let huboCambios = false;
-            cloudActivos.forEach(c => {
-                if (!students.some(l => l.id === c.id)) {
-                    students.push(c);
-                    huboCambios = true;
-                }
-            });
-
-            if (huboCambios) {
+            // Solo renderizamos si los datos de la nube son distintos a los que tenemos
+            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students)) {
+                students = nuevosActivos;
+                history = nuevoHistorial;
                 saveLocal();
                 render();
             }
         }
-    } catch (e) { console.log("Sincronizando..."); }
+    } catch (e) { 
+        console.log("Error de red: Manteniendo vista actual."); 
+    }
 }
 
 function saveLocal() {
@@ -47,7 +44,7 @@ function render() {
     const hist = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
-    // Actualizar contadores
+    [cite_start]// Contadores basados en variables CSS [cite: 1, 2]
     const counts = { ESPERA: 0, BUSCA: 0, AVISADO: 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
     document.getElementById("countEspera").textContent = counts.ESPERA;
@@ -59,7 +56,7 @@ function render() {
         const node = temp.content.cloneNode(true);
         const badge = node.querySelector(".state-badge");
         badge.textContent = s.stateKey;
-        badge.className = `state-badge state-${s.stateKey}`;
+        [cite_start]badge.className = `state-badge state-${s.stateKey}`; // Clases CSS [cite: 15, 16]
 
         node.querySelector(".student-name").textContent = s.name;
         node.querySelector(".student-course").textContent = s.course;
@@ -69,11 +66,8 @@ function render() {
             doneBtn.style.display = "block";
             doneBtn.onclick = async () => {
                 s.exitTime = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                history.push(s);
-                students = students.filter(x => x.id !== s.id);
-                saveLocal();
-                render();
-                await saveToCloud(s);
+                await saveToCloud(s); // Enviamos el fin a la nube primero
+                loadFromCloud(); // Refrescamos para que todos vean que se fue
             };
         }
 
@@ -81,9 +75,8 @@ function render() {
             const keys = ["ESPERA", "BUSCA", "AVISADO"];
             s.stateKey = keys[(keys.indexOf(s.stateKey) + 1) % keys.length];
             playSound('sound-status');
-            saveLocal();
-            render();
-            await saveToCloud(s);
+            render(); 
+            await saveToCloud(s); // Sincroniza el cambio de color
         };
 
         node.querySelector(".del-btn").onclick = () => {
@@ -91,6 +84,7 @@ function render() {
                 students = students.filter(x => x.id !== s.id);
                 saveLocal();
                 render();
+                // Aquí podrías agregar una función para borrar también en el Sheets si lo necesitas
             }
         };
         list.appendChild(node);
@@ -113,6 +107,7 @@ function render() {
 async function saveToCloud(s) {
     const p = new URLSearchParams();
     for (const key in s) p.append(key, s[key]);
+    [cite_start]// El modo no-cors es esencial para GitHub Pages [cite: 10]
     return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
 }
 
@@ -127,15 +122,21 @@ document.getElementById("addForm").onsubmit = async (e) => {
         exitTime: ""
     };
     
+    // 1. Guardar local para respuesta instantánea
     students.push(s);
     playSound('sound-add');
-    saveLocal();
     render();
+    
+    // 2. Enviar a la nube
     await saveToCloud(s);
+    
+    // 3. Limpiar y forzar recarga para asegurar sincronía
     e.target.reset();
+    setTimeout(loadFromCloud, 2000); 
 };
 
 // INICIALIZACIÓN
 render();
 loadFromCloud();
-setInterval(loadFromCloud, 20000); // Sincroniza cada 20 segundos
+// Intervalo de 10 segundos para que la portería y sala vean los cambios rápido
+setInterval(loadFromCloud, 10000);
