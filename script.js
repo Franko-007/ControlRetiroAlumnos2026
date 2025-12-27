@@ -1,6 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
 
-// 1. CARGA INICIAL (Prioridad absoluta a la memoria del navegador)
+// 1. CARGA INICIAL: Leemos la memoria del navegador 
 let students = JSON.parse(localStorage.getItem('retiros_f_activos')) || [];
 let history = JSON.parse(localStorage.getItem('retiros_f_historial')) || [];
 
@@ -9,28 +9,31 @@ function playSound(id) {
     if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
 }
 
+// 2. SINCRONIZACIÓN: Solo agrega lo nuevo, NO borra lo actual
 async function loadFromCloud() {
     try {
         const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
         const data = await res.json();
         
-        // SOLO si la nube trae datos reales y NO está vacía, actualizamos.
-        // Si la nube está vacía, NO tocamos la lista local para que no se borre.
         if (Array.isArray(data) && data.length > 0) {
-            const nuevosActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
-            const nuevoHistorial = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
+            // Filtramos los que vienen de la nube y NO están ya en nuestra lista local (usando ID) 
+            const cloudActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
             
-            // Si hay cambios reales, actualizamos la vista
-            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students)) {
-                students = nuevosActivos;
-                history = nuevoHistorial;
+            let huboCambios = false;
+            cloudActivos.forEach(cloudItem => {
+                const existe = students.find(localItem => localItem.id === cloudItem.id);
+                if (!existe) {
+                    students.push(cloudItem);
+                    huboCambios = true;
+                }
+            });
+
+            if (huboCambios) {
                 updateLocal();
                 render();
             }
         }
-    } catch (e) { 
-        console.warn("GitHub/Sheets: Error de conexión, manteniendo datos locales."); 
-    }
+    } catch (e) { console.warn("Sincronización pendiente..."); }
 }
 
 function updateLocal() {
@@ -54,6 +57,7 @@ function render() {
         const node = temp.content.cloneNode(true);
         const badge = node.querySelector(".state-badge");
         badge.textContent = s.stateKey;
+        // Aplicamos estilos basados en el estado [cite: 2, 16]
         badge.className = `state-badge state-${s.stateKey}`;
 
         node.querySelector(".student-name").textContent = s.name;
@@ -82,7 +86,7 @@ function render() {
         };
 
         node.querySelector(".del-btn").onclick = () => {
-            if(confirm("¿Eliminar?")) {
+            if(confirm("¿Eliminar alumno?")) {
                 students = students.filter(x => x.id !== s.id);
                 updateLocal();
                 render();
@@ -95,6 +99,7 @@ function render() {
     hist.innerHTML = "";
     history.slice(-8).reverse().forEach(s => {
         const node = temp.content.cloneNode(true);
+        // El historial se ve con opacidad reducida [cite: 12]
         node.querySelector(".student-item").style.opacity = "0.4";
         node.querySelector(".state-badge").textContent = "FIN";
         node.querySelector(".student-name").textContent = s.name;
@@ -109,14 +114,14 @@ function render() {
 async function saveToCloud(s) {
     const p = new URLSearchParams();
     for (const key in s) p.append(key, s[key]);
-    // 'no-cors' evita bloqueos de seguridad en GitHub
+    // Usamos no-cors para evitar bloqueos en GitHub Pages 
     return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
 }
 
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const s = {
-        id: "ID-"+Date.now(),
+        id: "ID-"+Date.now() + Math.floor(Math.random() * 1000), // ID único
         name: document.getElementById("nameInput").value,
         course: document.getElementById("courseInput").value,
         stateKey: "ESPERA",
@@ -124,18 +129,16 @@ document.getElementById("addForm").onsubmit = async (e) => {
         exitTime: ""
     };
     
-    // Primero mostramos y guardamos localmente (Instantáneo)
     students.push(s);
     playSound('sound-add');
     updateLocal();
     render();
     
-    // Luego intentamos enviar a la nube
     await saveToCloud(s);
     e.target.reset();
 };
 
-// INICIO SEGURO
+// INICIO: Renderizamos lo local y luego buscamos actualizaciones 
 render(); 
 loadFromCloud(); 
-setInterval(loadFromCloud, 20000); // Sincroniza cada 20 seg sin borrar lo local
+setInterval(loadFromCloud, 15000); // Revisa la nube cada 15 segundos
