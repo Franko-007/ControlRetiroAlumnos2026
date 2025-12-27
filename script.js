@@ -1,34 +1,23 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDM1Hk1YlbLMsvRcqSYxEF5w2Q_W9xpg6y7Cr34KYPLODA-VA_F3DOWe0m2gs0nb6B/exec"
 
-// Estado global de la aplicación
 let students = [];
 let history = [];
 
-/**
- * FUNCIÓN MAESTRA DE CARGA
- * Elimina cualquier rastro de memoria local para obligar a ver lo de otros equipos.
- */
 async function sync() {
     try {
-        // El parámetro 'nocache' con Date.now() es la ÚNICA forma de saltarse el bloqueo de GitHub
-        const response = await fetch(`${SCRIPT_URL}?nocache=${Date.now()}`);
+        // Forzamos la descarga sin caché para que se vea en otros equipos
+        const response = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+        if (!response.ok) throw new Error("Error de red");
+        
         const data = await response.json();
         
-        if (Array.isArray(data)) {
-            const nuevosActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
-            const nuevoHistorial = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
-
-            // Solo redibujamos si la nube dice algo distinto a lo que vemos
-            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students) || 
-                JSON.stringify(nuevoHistorial) !== JSON.stringify(history)) {
-                
-                students = nuevosActivos;
-                history = nuevoHistorial;
-                render();
-            }
-        }
+        // Separamos alumnos activos de los ya entregados
+        students = data.filter(s => String(s.exitTime).trim() === "");
+        history = data.filter(s => String(s.exitTime).trim() !== "");
+        
+        render();
     } catch (e) {
-        console.error("Reconectando con el servidor escolar...");
+        console.error("Esperando datos del Sheets...");
     }
 }
 
@@ -37,7 +26,7 @@ function render() {
     const hist = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
-    // Actualizar contadores
+    // Contadores
     const counts = { ESPERA: 0, BUSCA: 0, AVISADO: 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
     document.getElementById("countEspera").textContent = counts.ESPERA;
@@ -50,7 +39,6 @@ function render() {
         const badge = node.querySelector(".state-badge");
         badge.textContent = s.stateKey;
         badge.className = `state-badge state-${s.stateKey}`;
-
         node.querySelector(".student-name").textContent = s.name;
         node.querySelector(".student-course").textContent = s.course;
         
@@ -67,15 +55,9 @@ function render() {
         badge.onclick = async () => {
             const keys = ["ESPERA", "BUSCA", "AVISADO"];
             s.stateKey = keys[(keys.indexOf(s.stateKey) + 1) % keys.length];
-            const audio = document.getElementById('sound-status');
-            if(audio) audio.play().catch(()=>{});
-            
-            // Cambio visual instantáneo para el usuario que hace click
-            render(); 
-            // Envío a la nube
             await push(s);
+            sync(); // Actualiza a todos los equipos
         };
-
         list.appendChild(node);
     });
 
@@ -86,11 +68,9 @@ function render() {
         node.querySelector(".state-badge").textContent = "FIN";
         node.querySelector(".student-name").textContent = s.name;
         node.querySelector(".student-course").textContent = s.course;
-        node.querySelector(".student-actions").innerHTML = `<small style="color:var(--muted)">${s.exitTime}</small>`;
+        node.querySelector(".student-actions").innerHTML = `<small>${s.exitTime}</small>`;
         hist.appendChild(node);
     });
-
-    document.getElementById("emptyState").style.display = students.length ? "none" : "block";
 }
 
 async function push(obj) {
@@ -102,25 +82,18 @@ async function push(obj) {
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const s = {
-        id: "ID-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+        id: "ID-" + Date.now(),
         name: document.getElementById("nameInput").value,
         course: document.getElementById("courseInput").value,
         stateKey: "ESPERA",
         timestamp: Date.now().toString(),
         exitTime: ""
     };
-    
-    const audio = document.getElementById('sound-add');
-    if(audio) audio.play().catch(()=>{});
-
     await push(s);
     e.target.reset();
-    
-    // Refresco casi instantáneo tras agregar
-    setTimeout(sync, 1000);
+    setTimeout(sync, 1500);
 };
 
-// --- ARRANQUE DE ALTA VELOCIDAD ---
-sync(); 
-// Consultamos cada 3 segundos. Es el límite seguro para no bloquear Google.
-setInterval(sync, 3000);
+// Sincronización automática cada 4 segundos
+sync();
+setInterval(sync, 4000);
