@@ -1,6 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
 
-// Carga inmediata desde LocalStorage para que nunca se vea vacío al recargar
+// Carga inmediata para evitar listas vacías
 let students = JSON.parse(localStorage.getItem('retiros_f_activos')) || [];
 let history = JSON.parse(localStorage.getItem('retiros_f_historial')) || [];
 
@@ -11,16 +11,16 @@ function playSound(id) {
 
 async function loadFromCloud() {
     try {
-        // El timestamp (?t=) evita que GitHub cachee datos viejos
         const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
         const data = await res.json();
         if (Array.isArray(data)) {
+            // Sincronizamos con la nube pero respetamos lo que hay en pantalla
             students = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
             history = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
             updateLocal();
             render();
         }
-    } catch (e) { console.warn("Modo local: No se pudo conectar con la nube."); }
+    } catch (e) { console.warn("Error nube: Usando datos locales."); }
 }
 
 function updateLocal() {
@@ -71,11 +71,19 @@ function render() {
             saveToCloud(s);
         };
 
+        node.querySelector(".del-btn").onclick = () => {
+            if(confirm("¿Borrar de la lista?")) {
+                students = students.filter(x => x.id !== s.id);
+                updateLocal();
+                render();
+            }
+        };
+
         list.appendChild(node);
     });
 
     hist.innerHTML = "";
-    history.slice(-5).reverse().forEach(s => {
+    history.slice(-8).reverse().forEach(s => {
         const node = temp.content.cloneNode(true);
         node.querySelector(".student-item").style.opacity = "0.4";
         node.querySelector(".state-badge").textContent = "FIN";
@@ -91,7 +99,6 @@ function render() {
 async function saveToCloud(s) {
     const p = new URLSearchParams();
     for (const key in s) p.append(key, s[key]);
-    // 'no-cors' es fundamental para que GitHub Pages no bloquee el envío
     return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
 }
 
@@ -109,11 +116,10 @@ document.getElementById("addForm").onsubmit = async (e) => {
     playSound('sound-add');
     render();
     updateLocal();
-    await saveToCloud(s);
+    saveToCloud(s);
     e.target.reset();
 };
 
-// Inicio
 render();
 loadFromCloud();
 setInterval(loadFromCloud, 30000);
