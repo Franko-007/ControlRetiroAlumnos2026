@@ -1,43 +1,38 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
 
-// 1. CARGA INICIAL DESDE MEMORIA LOCAL (Para que nunca se vea vacío)
-let students = JSON.parse(localStorage.getItem('retiros_backup_activos')) || [];
-let history = JSON.parse(localStorage.getItem('retiros_backup_historial')) || [];
+// Carga inmediata desde LocalStorage para que nunca se vea vacío al recargar
+let students = JSON.parse(localStorage.getItem('retiros_f_activos')) || [];
+let history = JSON.parse(localStorage.getItem('retiros_f_historial')) || [];
 
 function playSound(id) {
     const audio = document.getElementById(id);
-    if (audio) { audio.currentTime = 0; audio.play().catch(e => {}); }
+    if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
 }
 
-// 2. SINCRONIZACIÓN CON LA NUBE (Sin borrar lo local si falla)
-async function load() {
+async function loadFromCloud() {
     try {
-        const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
+        // El timestamp (?t=) evita que GitHub cachee datos viejos
+        const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
         const data = await res.json();
-        
-        // SOLO si recibimos un array con datos, actualizamos
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
             students = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
             history = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
-            guardarEnLocal();
+            updateLocal();
             render();
         }
-    } catch (e) { 
-        console.warn("Nube desconectada, usando datos locales."); 
-    }
+    } catch (e) { console.warn("Modo local: No se pudo conectar con la nube."); }
 }
 
-function guardarEnLocal() {
-    localStorage.setItem('retiros_backup_activos', JSON.stringify(students));
-    localStorage.setItem('retiros_backup_historial', JSON.stringify(history));
+function updateLocal() {
+    localStorage.setItem('retiros_f_activos', JSON.stringify(students));
+    localStorage.setItem('retiros_f_historial', JSON.stringify(history));
 }
 
 function render() {
     const list = document.getElementById("studentList");
-    const histList = document.getElementById("historyList");
+    const hist = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
-    // Actualizar Contadores
     const counts = { ESPERA: 0, BUSCA: 0, AVISADO: 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
     document.getElementById("countEspera").textContent = counts.ESPERA;
@@ -59,10 +54,10 @@ function render() {
             doneBtn.style.display = "block";
             doneBtn.onclick = () => {
                 s.exitTime = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                saveCloud(s);
+                saveToCloud(s);
                 history.push(s);
                 students = students.filter(x => x.id !== s.id);
-                guardarEnLocal();
+                updateLocal();
                 render();
             };
         }
@@ -71,43 +66,36 @@ function render() {
             const keys = ["ESPERA", "BUSCA", "AVISADO"];
             s.stateKey = keys[(keys.indexOf(s.stateKey) + 1) % keys.length];
             playSound('sound-status');
-            guardarEnLocal();
             render();
-            saveCloud(s);
-        };
-
-        node.querySelector(".del-btn").onclick = () => {
-            if(confirm("¿Eliminar de la lista?")) {
-                students = students.filter(x => x.id !== s.id);
-                guardarEnLocal();
-                render();
-            }
+            updateLocal();
+            saveToCloud(s);
         };
 
         list.appendChild(node);
     });
 
-    histList.innerHTML = "";
-    history.slice(-8).reverse().forEach(s => {
+    hist.innerHTML = "";
+    history.slice(-5).reverse().forEach(s => {
         const node = temp.content.cloneNode(true);
         node.querySelector(".student-item").style.opacity = "0.4";
         node.querySelector(".state-badge").textContent = "FIN";
         node.querySelector(".student-name").textContent = s.name;
         node.querySelector(".student-course").textContent = s.course;
         node.querySelector(".student-actions").innerHTML = `<small style="color:var(--muted)">${s.exitTime}</small>`;
-        histList.appendChild(node);
+        hist.appendChild(node);
     });
 
     document.getElementById("emptyState").style.display = students.length ? "none" : "block";
 }
 
-async function saveCloud(s) {
+async function saveToCloud(s) {
     const p = new URLSearchParams();
     for (const key in s) p.append(key, s[key]);
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
+    // 'no-cors' es fundamental para que GitHub Pages no bloquee el envío
+    return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
 }
 
-document.getElementById("addForm").onsubmit = (e) => {
+document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const s = {
         id: "ID-"+Date.now(),
@@ -119,13 +107,13 @@ document.getElementById("addForm").onsubmit = (e) => {
     };
     students.push(s);
     playSound('sound-add');
-    guardarEnLocal();
     render();
-    saveCloud(s);
+    updateLocal();
+    await saveToCloud(s);
     e.target.reset();
 };
 
-// 3. INICIO
-render(); // Renderiza lo que hay en localStorage al abrir
-load();   // Luego intenta traer cosas de la nube
-setInterval(load, 30000); // Sincroniza cada 30 seg
+// Inicio
+render();
+loadFromCloud();
+setInterval(loadFromCloud, 30000);
