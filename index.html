@@ -11,18 +11,18 @@
     <audio id="sound-status" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 
     <header class="app-header">
-        <div class="header-content">
-            <span class="logo">🎒</span>
+        <div class="header-main">
+            <span class="header-icon">🎒</span>
             <h1>Control de Retiro Escolar NSG</h1>
         </div>
         <p>Toca un alumno para cambiar su estado.</p>
     </header>
 
     <main class="container">
-        <form id="addForm" class="controls">
+        <form id="addForm" class="form-container">
             <input type="text" id="nameInput" placeholder="Nombre y apellido" required>
             
-            <div class="row">
+            <div class="input-group">
                 <select id="courseInput" required>
                     <option value="" disabled selected>Curso</option>
                     <optgroup label="Párvulos">
@@ -53,43 +53,44 @@
                     <option value="Trámite Personal">Trámite Personal</option>
                     <option value="Enfermedad">Enfermedad</option>
                     <option value="Retiro Anticipado">Retiro Anticipado</option>
+                    <option value="Otro">Otro</option>
                 </select>
             </div>
 
-            <button type="submit" class="add-btn">Agregar</button>
+            <button type="submit" class="btn-primary">Agregar</button>
 
-            <div class="filters">
+            <div class="stats-bar">
                 <span><i class="dot red"></i> Espera: <b id="countEspera">0</b></span>
-                <span><i class="dot yellow"></i> Busca: <b id="countBusca">0</b></span>
+                <span><i class="dot yellow"></i> En Busca: <b id="countBusca">0</b></span>
                 <span><i class="dot green"></i> Avisado: <b id="countAvisado">0</b></span>
             </div>
         </form>
 
         <ul id="studentList" class="student-list"></ul>
-        <div id="emptyState" class="empty-card">
+        <div id="emptyState" class="empty-msg">
             <span>❌ Sin alumnos activos.</span>
         </div>
 
-        <div class="history-section">
-            <h2>📜 Historial de Retirados (Hoy)</h2>
+        <section class="history-container">
+            <h3>📜 Historial de Retirados (Hoy)</h3>
             <ul id="historyList" class="student-list"></ul>
-        </div>
+        </section>
     </main>
 
-    <footer class="app-footer">
+    <footer class="footer">
         <p>2026 Derechos Reservados - Por Franco</p>
     </footer>
 
     <template id="itemTemplate">
-        <li class="student-item">
-            <div class="state-badge"></div>
-            <div class="student-info">
-                <div class="student-name"></div>
-                <div class="student-course"></div>
+        <li class="card">
+            <button class="state-btn"></button>
+            <div class="info">
+                <span class="name"></span>
+                <span class="sub"></span>
             </div>
-            <div class="student-actions">
-                <button class="done-btn">✅</button>
-                <button class="del-btn">🗑️</button>
+            <div class="actions">
+                <button class="done-check">✅</button>
+                <button class="delete-btn">🗑️</button>
             </div>
         </li>
     </template>
