@@ -25,11 +25,14 @@ function render() {
     const histList = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
+    // Contadores actualizados (Incluyendo historial)
     const counts = { "ESPERA": 0, "EN BUSCA": 0, "AVISADO": 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
+    
     document.getElementById("countEspera").textContent = counts["ESPERA"];
     document.getElementById("countBusca").textContent = counts["EN BUSCA"];
     document.getElementById("countAvisado").textContent = counts["AVISADO"];
+    document.getElementById("countFinalizado").textContent = history.length; // Conteo de historial
 
     list.innerHTML = "";
     students.forEach(s => {
@@ -48,6 +51,8 @@ function render() {
             doneBtn.style.display = "flex";
             doneBtn.onclick = async () => {
                 s.exitTime = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                // Efecto visual instantáneo
+                history.push(s);
                 students = students.filter(x => x.id !== s.id);
                 render();
                 await push(s);
