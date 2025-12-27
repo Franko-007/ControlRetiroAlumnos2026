@@ -1,139 +1,113 @@
 :root {
-    --bg: #0f121a;
-    --card: #171c2a;
-    --text: #eaf1ff;
-    --muted: #8b9bb4;
-    --accent: #4e73df;
-    --rojo: #ff3b30;
-    --amarillo: #ffcc00;
-    --verde: #34c759;
+    --bg: #12141d;
+    --card: #1c1f2e;
+    --text: #ffffff;
+    --muted: #a0a8c0;
+    --accent: #3a86ff;
+    --rojo: #e63946;    /* Rojo pasión fuerte */
+    --amarillo: #ffb703; /* Amarillo ocre vibrante */
+    --verde: #2a9d8f;   /* Verde esmeralda oscuro */
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
-body { background: var(--bg); color: var(--text); padding: 15px; }
+body { background: var(--bg); color: var(--text); padding: 15px; line-height: 1.5; }
 
-/* --- CONTADORES SUPERIORES --- */
+/* --- ENCABEZADOS --- */
+.app-header h1 { text-align: center; font-size: 1.6rem; margin-bottom: 20px; color: var(--accent); }
+
+/* --- FORMULARIO COMPACTO --- */
+.controls {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.add-form { display: flex; flex-direction: column; gap: 12px; }
+
+input, select, button {
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid #343a40;
+    background: #252a41;
+    color: white;
+    font-size: 1rem;
+}
+
+button[type="submit"] {
+    background: var(--accent);
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- CONTADORES MÁS LIMPIOS --- */
 .filters {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px 0;
-    flex-wrap: wrap;
+    justify-content: space-around;
+    background: #252a41;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
 }
 
-.filters span {
-    background: var(--card);
-    padding: 10px 18px;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    border: 1px solid #2b3553;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
+.filters span { font-size: 0.9rem; font-weight: 600; }
+.filters b { font-size: 1.2rem; margin-left: 5px; }
 
-.filters b { font-size: 1.2rem; }
-
-/* --- TARJETAS DE ALUMNOS --- */
+/* --- TARJETAS DE ALUMNOS (EL CAMBIO CLAVE) --- */
 .student-item {
     background: var(--card);
     display: flex;
     align-items: center;
-    padding: 18px; /* Más espacioso */
-    border-radius: 15px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: transform 0.2s;
-    border-left: 8px solid transparent; /* Borde lateral más grueso */
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #2b3044;
 }
 
-/* Colores dinámicos por estado */
-.student-item:has(.state-ESPERA) { border-left-color: var(--rojo); }
-.student-item:has(.state-BUSCA) { border-left-color: var(--amarillo); }
-.student-item:has(.state-AVISADO) { border-left-color: var(--verde); }
-
-/* --- BOTONES DE ESTADO (BADGES) --- */
+/* El Badge de estado ahora es un bloque sólido y rectangular */
 .state-badge {
-    width: 110px; /* Más ancho */
-    height: 45px; /* Más alto */
-    font-size: 0.85rem; /* Letra más grande */
-    font-weight: 900;
-    border-radius: 10px;
+    min-width: 100px;
+    padding: 12px 5px;
+    border-radius: 6px;
     border: none;
-    cursor: pointer;
+    font-weight: 800;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    margin-right: 18px;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.state-ESPERA { 
-    background: var(--rojo); 
-    color: white; 
-    box-shadow: 0 0 15px rgba(255, 59, 48, 0.3);
-}
-
-.state-BUSCA { 
-    background: var(--amarillo); 
-    color: #111; 
-    box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
-}
-
-.state-AVISADO { 
-    background: var(--verde); 
-    color: white; 
-    box-shadow: 0 0 15px rgba(52, 199, 89, 0.3);
-    animation: pulse-green 2s infinite; /* El verde parpadea suave para avisar */
-}
-
-@keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7); }
-    70% { box-shadow: 0 0 0 12px rgba(52, 199, 89, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
-}
-
-/* --- TEXTOS --- */
-.student-info { flex-grow: 1; }
-.student-name { font-weight: 700; font-size: 1.25rem; margin-bottom: 4px; }
-.student-course { color: var(--muted); font-size: 0.95rem; font-weight: 500; }
-
-/* --- BOTONES DE ACCIÓN --- */
-.done-btn {
-    background: var(--verde);
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+    margin-right: 15px;
     cursor: pointer;
-    font-size: 1.5rem;
+    text-align: center;
+}
+
+.state-ESPERA { background: var(--rojo); color: white; }
+.state-BUSCA { background: var(--amarillo); color: #000; }
+.state-AVISADO { background: var(--verde); color: white; }
+
+.student-info { flex-grow: 1; }
+.student-name { font-size: 1.2rem; font-weight: 700; display: block; }
+.student-course { font-size: 0.9rem; color: var(--muted); }
+
+/* --- BOTÓN FINALIZAR ✅ --- */
+.done-btn {
+    background: #ffffff;
+    color: #000;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    font-size: 1.4rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    margin-right: 10px;
 }
 
-.done-btn:hover { transform: scale(1.1); }
-
-/* --- FORMULARIO Y OTROS --- */
-.add-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Dos columnas para que no sea tan largo */
-    gap: 12px;
-}
-
-#nameInput { grid-column: span 2; } /* El nombre ocupa toda la fila */
-button[type="submit"] { grid-column: span 2; height: 50px; font-size: 1.1rem; }
+.del-btn { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.5; }
 
 /* Mobile */
-@media (max-width: 600px) {
-    .add-form { grid-template-columns: 1fr; }
-    #nameInput, button[type="submit"] { grid-column: span 1; }
-    .state-badge { width: 90px; font-size: 0.75rem; }
+@media (max-width: 500px) {
+    .state-badge { min-width: 80px; font-size: 0.7rem; }
     .student-name { font-size: 1.1rem; }
 }
