@@ -1,6 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
 
-// 1. CARGA INICIAL: Leemos la memoria del navegador 
+// 1. MEMORIA LOCAL (Lo primero que se ve)
 let students = JSON.parse(localStorage.getItem('retiros_f_activos')) || [];
 let history = JSON.parse(localStorage.getItem('retiros_f_historial')) || [];
 
@@ -9,31 +9,28 @@ function playSound(id) {
     if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
 }
 
-// 2. SINCRONIZACIÓN: Solo agrega lo nuevo, NO borra lo actual
+// 2. CARGA SEGURA: Jamás borra si la nube no trae datos válidos
 async function loadFromCloud() {
     try {
         const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
         const data = await res.json();
         
+        // PROTECCIÓN: Solo actualizamos si recibimos una lista con contenido real
         if (Array.isArray(data) && data.length > 0) {
-            // Filtramos los que vienen de la nube y NO están ya en nuestra lista local (usando ID) 
-            const cloudActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
+            const nuevosActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
+            const nuevoHistorial = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
             
-            let huboCambios = false;
-            cloudActivos.forEach(cloudItem => {
-                const existe = students.find(localItem => localItem.id === cloudItem.id);
-                if (!existe) {
-                    students.push(cloudItem);
-                    huboCambios = true;
-                }
-            });
-
-            if (huboCambios) {
+            // Comprobamos si realmente hay cambios para no parpadear la pantalla
+            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students)) {
+                students = nuevosActivos;
+                history = nuevoHistorial;
                 updateLocal();
                 render();
             }
         }
-    } catch (e) { console.warn("Sincronización pendiente..."); }
+    } catch (e) {
+        console.log("Manteniendo lista local por falta de conexión.");
+    }
 }
 
 function updateLocal() {
@@ -57,7 +54,6 @@ function render() {
         const node = temp.content.cloneNode(true);
         const badge = node.querySelector(".state-badge");
         badge.textContent = s.stateKey;
-        // Aplicamos estilos basados en el estado [cite: 2, 16]
         badge.className = `state-badge state-${s.stateKey}`;
 
         node.querySelector(".student-name").textContent = s.name;
@@ -86,7 +82,7 @@ function render() {
         };
 
         node.querySelector(".del-btn").onclick = () => {
-            if(confirm("¿Eliminar alumno?")) {
+            if(confirm("¿Eliminar?")) {
                 students = students.filter(x => x.id !== s.id);
                 updateLocal();
                 render();
@@ -99,7 +95,6 @@ function render() {
     hist.innerHTML = "";
     history.slice(-8).reverse().forEach(s => {
         const node = temp.content.cloneNode(true);
-        // El historial se ve con opacidad reducida [cite: 12]
         node.querySelector(".student-item").style.opacity = "0.4";
         node.querySelector(".state-badge").textContent = "FIN";
         node.querySelector(".student-name").textContent = s.name;
@@ -114,14 +109,13 @@ function render() {
 async function saveToCloud(s) {
     const p = new URLSearchParams();
     for (const key in s) p.append(key, s[key]);
-    // Usamos no-cors para evitar bloqueos en GitHub Pages 
     return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
 }
 
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const s = {
-        id: "ID-"+Date.now() + Math.floor(Math.random() * 1000), // ID único
+        id: "ID-" + Date.now() + Math.floor(Math.random() * 100),
         name: document.getElementById("nameInput").value,
         course: document.getElementById("courseInput").value,
         stateKey: "ESPERA",
@@ -129,6 +123,7 @@ document.getElementById("addForm").onsubmit = async (e) => {
         exitTime: ""
     };
     
+    // Agregado instantáneo
     students.push(s);
     playSound('sound-add');
     updateLocal();
@@ -138,7 +133,7 @@ document.getElementById("addForm").onsubmit = async (e) => {
     e.target.reset();
 };
 
-// INICIO: Renderizamos lo local y luego buscamos actualizaciones 
+// INICIO
 render(); 
 loadFromCloud(); 
-setInterval(loadFromCloud, 15000); // Revisa la nube cada 15 segundos
+setInterval(loadFromCloud, 20000);
