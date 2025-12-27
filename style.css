@@ -1,173 +1,117 @@
 :root {
-  --bg: #0f1420;
-  --card: #171c2a;
-  --text: #eaf1ff;
-  --muted: #a7b0c4;
-  --accent: #4aa9ff;
-  --danger: #ff4d4f;
-
-  /* Estados */
-  --rojo: #e53935;
-  --amarillo: #fbc02d;
-  --verde: #43a047;
+    --bg: #0f121a;
+    --card: #171c2a;
+    --text: #eaf1ff;
+    --muted: #8b9bb4;
+    --accent: #4e73df;
+    --rojo: #ff4b5c;
+    --amarillo: #ffca28;
+    --verde: #00e676;
 }
 
-* { box-sizing: border-box; }
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-  margin: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
 
-.app-header {
-  padding: 16px;
-  text-align: center;
-  background: linear-gradient(180deg, #101629, #0f1420);
-  border-bottom: 1px solid #1f2740;
-}
-.app-header h1 { margin: 0 0 6px; }
-.app-header p { margin: 0; color: var(--muted); }
+body { background: var(--bg); color: var(--text); padding: 10px; }
+
+.app-header { text-align: center; padding: 20px 0; }
+.app-header h1 { font-size: 1.5rem; color: var(--accent); }
+.app-header p { color: var(--muted); font-size: 0.9rem; }
 
 .controls {
-  padding: 16px;
-  display: grid;
-  gap: 12px;
+    background: var(--card);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
 }
 
-/* Formulario de agregar */
-.add-form {
-  display: grid;
-  grid-template-columns: 1fr 120px 120px;
-  gap: 8px;
-}
-.add-form input, .add-form button,
-.filters input, .filters select, .filters button {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #2b3553;
-  background: var(--card);
-  color: var(--text);
-}
-.add-form button {
-  background: var(--accent);
-  border-color: #2d6ea8;
-  color: #041424;
-  font-weight: 700;
-  cursor: pointer;
-}
-.add-form button:hover { filter: brightness(1.05); }
+.add-form { display: flex; flex-direction: column; gap: 10px; }
 
-/* Filtros */
+/* Ajuste para que los inputs se vean modernos */
+input, select, button {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #2b3553;
+    background: #1d2335;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+}
+
+input:focus, select:focus { border-color: var(--accent); }
+
+button[type="submit"] {
+    background: var(--accent);
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button[type="submit"]:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Filtros y contadores */
 .filters {
-  display: grid;
-  grid-template-columns: 1fr 160px 180px 140px;
-  gap: 8px;
-}
-.filters .danger {
-  background: var(--danger);
-  color: #fff;
-  border-color: #b3261e;
-  cursor: pointer;
-}
-.filters .danger:hover { filter: brightness(1.05); }
-
-/* Estado vacío */
-.empty {
-  margin: 24px;
-  padding: 16px;
-  border: 1px dashed #2b3553;
-  border-radius: 12px;
-  color: var(--muted);
-  text-align: center;
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #2b3553;
+    font-size: 0.85rem;
 }
 
 /* Lista de alumnos */
-.student-list {
-  list-style: none;
-  padding: 0 16px 24px;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-}
+.student-list { list-style: none; margin-top: 10px; }
 
 .student-item {
-  display: grid;
-  grid-template-columns: 140px 1fr auto;
-  gap: 12px;
-  align-items: center;
-  background: var(--card);
-  border: 1px solid #253257;
-  border-radius: 12px;
-  padding: 10px;
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border-left: 5px solid transparent;
+    animation: fadeIn 0.3s ease;
 }
 
-/* Botón de estado */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
 .state-badge {
-  width: 100%;
-  height: 42px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 800;
-  color: #091017;
-  letter-spacing: 0.5px;
+    width: 85px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    padding: 6px 0;
+    margin-right: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
 }
 
-.state-ESPERA { background: var(--rojo); }
-.state-BUSCA { background: var(--amarillo); }
-.state-AVISADO { background: var(--verde); }
+/* Colores de estados */
+.state-ESPERA { background: var(--rojo); color: white; border-left-color: var(--rojo); }
+.state-BUSCA { background: var(--amarillo); color: #222; }
+.state-AVISADO { background: var(--verde); color: #222; }
 
-/* Info alumno */
-.student-info {
-  display: grid;
-  gap: 4px;
-}
-.student-name { font-size: 1rem; }
-.student-course { color: var(--muted); font-size: 0.9rem; }
+.student-info { flex-grow: 1; }
+.student-name { font-weight: bold; font-size: 1.1rem; }
+.student-course { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
 
-/* Acciones */
-.student-actions {
-  display: flex;
-  gap: 6px;
-}
-.student-actions button {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #2b3553;
-  background: #1b2236;
-  color: var(--text);
-  cursor: pointer;
-}
-.student-actions button:hover { filter: brightness(1.08); }
+.student-actions { display: flex; gap: 10px; align-items: center; }
 
-/* 📱 Responsive */
-@media (max-width: 1024px) {
-  .add-form {
-    grid-template-columns: 1fr 1fr 120px;
-  }
-  .filters {
-    grid-template-columns: 1fr 1fr;
-  }
-}
+.done-btn { background: var(--verde); border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
+.del-btn { background: transparent; border: none; cursor: pointer; font-size: 1.2rem; filter: grayscale(1); }
+.del-btn:hover { filter: grayscale(0); }
 
-@media (max-width: 720px) {
-  .add-form {
-    grid-template-columns: 1fr;
-  }
-  .filters {
-    grid-template-columns: 1fr;
-  }
-  .student-item {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  .student-actions {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .state-badge {
-    height: 36px;
-  }
+.empty { text-align: center; padding: 40px; color: var(--muted); }
+.separator { border: 0; border-top: 1px solid #2b3553; margin: 25px 0; }
+
+.app-header.small h2 { font-size: 1.1rem; color: var(--muted); }
+.app-footer { text-align: center; padding: 30px; color: var(--muted); font-size: 0.8rem; }
+
+/* Optimización para móviles */
+@media (max-width: 480px) {
+    .add-form { gap: 8px; }
+    .student-name { font-size: 1rem; }
+    .state-badge { width: 70px; font-size: 0.6rem; }
 }
