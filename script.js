@@ -1,60 +1,49 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxopNnF78VHD9CXlsc5UKRhxmSirHDkENbCbj38oFNcH2KzBj4Kv9nBSqwtTPiHmBiv/exec";
 
-// Variables de estado sincronizado
+// Estado global de la aplicación
 let students = [];
 let history = [];
 
-// Sonidos
-function playSound(id) {
-    const audio = document.getElementById(id);
-    if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
-}
-
 /**
- * ACCIÓN DEFINITIVA: Sincronización Multiequipo
- * Esta función limpia la vista y dibuja lo que la nube diga, 
- * asegurando que todos los dispositivos vean lo mismo.
+ * FUNCIÓN MAESTRA DE CARGA
+ * Elimina cualquier rastro de memoria local para obligar a ver lo de otros equipos.
  */
-async function syncWithCloud() {
+async function sync() {
     try {
-        // El parámetro '_cacheKiller' obliga a la red a no usar datos viejos
-        const res = await fetch(`${SCRIPT_URL}?_cacheKiller=${Date.now()}`);
-        const data = await res.json();
+        // El parámetro 'nocache' con Date.now() es la ÚNICA forma de saltarse el bloqueo de GitHub
+        const response = await fetch(`${SCRIPT_URL}?nocache=${Date.now()}`);
+        const data = await response.json();
         
         if (Array.isArray(data)) {
             const nuevosActivos = data.filter(s => !s.exitTime || s.exitTime.trim() === "");
             const nuevoHistorial = data.filter(s => s.exitTime && s.exitTime.trim() !== "");
 
-            // Solo refresca la pantalla si hay cambios reales en los datos
+            // Solo redibujamos si la nube dice algo distinto a lo que vemos
             if (JSON.stringify(nuevosActivos) !== JSON.stringify(students) || 
                 JSON.stringify(nuevoHistorial) !== JSON.stringify(history)) {
                 
                 students = nuevosActivos;
                 history = nuevoHistorial;
-                renderUI();
+                render();
             }
         }
-    } catch (e) { 
-        console.error("Error de sincronización de red."); 
+    } catch (e) {
+        console.error("Reconectando con el servidor escolar...");
     }
 }
 
-/**
- * RENDERIZADO DE INTERFAZ
- */
-function renderUI() {
+function render() {
     const list = document.getElementById("studentList");
     const hist = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
-    // Actualización de contadores superiores
+    // Actualizar contadores
     const counts = { ESPERA: 0, BUSCA: 0, AVISADO: 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
     document.getElementById("countEspera").textContent = counts.ESPERA;
     document.getElementById("countBusca").textContent = counts.BUSCA;
     document.getElementById("countAvisado").textContent = counts.AVISADO;
 
-    // Dibujar lista de alumnos activos
     list.innerHTML = "";
     students.forEach(s => {
         const node = temp.content.cloneNode(true);
@@ -70,24 +59,26 @@ function renderUI() {
             doneBtn.style.display = "block";
             doneBtn.onclick = async () => {
                 s.exitTime = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                await sendToCloud(s);
-                syncWithCloud(); // Sincroniza a todos inmediatamente
+                await push(s);
+                sync(); 
             };
         }
 
-        // Cambio de estado circular: Espera -> Busca -> Avisado
         badge.onclick = async () => {
             const keys = ["ESPERA", "BUSCA", "AVISADO"];
             s.stateKey = keys[(keys.indexOf(s.stateKey) + 1) % keys.length];
-            playSound('sound-status');
-            await sendToCloud(s);
-            syncWithCloud();
+            const audio = document.getElementById('sound-status');
+            if(audio) audio.play().catch(()=>{});
+            
+            // Cambio visual instantáneo para el usuario que hace click
+            render(); 
+            // Envío a la nube
+            await push(s);
         };
 
         list.appendChild(node);
     });
 
-    // Dibujar historial (Últimos 5 entregados)
     hist.innerHTML = "";
     history.slice(-5).reverse().forEach(s => {
         const node = temp.content.cloneNode(true);
@@ -102,27 +93,15 @@ function renderUI() {
     document.getElementById("emptyState").style.display = students.length ? "none" : "block";
 }
 
-/**
- * ENVÍO A GOOGLE SHEETS
- */
-async function sendToCloud(studentObj) {
+async function push(obj) {
     const params = new URLSearchParams();
-    for (const key in studentObj) params.append(key, studentObj[key]);
-    
-    // El modo 'no-cors' es vital para estabilidad en GitHub Pages
-    return fetch(SCRIPT_URL, { 
-        method: 'POST', 
-        mode: 'no-cors', 
-        body: params 
-    });
+    for (const key in obj) params.append(key, obj[key]);
+    return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
 }
 
-/**
- * EVENTO: Agregar Alumno
- */
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
-    const newStudent = {
+    const s = {
         id: "ID-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
         name: document.getElementById("nameInput").value,
         course: document.getElementById("courseInput").value,
@@ -131,14 +110,17 @@ document.getElementById("addForm").onsubmit = async (e) => {
         exitTime: ""
     };
     
-    playSound('sound-add');
-    await sendToCloud(newStudent);
+    const audio = document.getElementById('sound-add');
+    if(audio) audio.play().catch(()=>{});
+
+    await push(s);
     e.target.reset();
     
-    // Pequeña pausa para que Google Sheets procese y luego sincroniza todos los equipos
-    setTimeout(syncWithCloud, 1000);
+    // Refresco casi instantáneo tras agregar
+    setTimeout(sync, 1000);
 };
 
-// --- INICIO DE LA APLICACIÓN ---
-syncWithCloud(); // Primera carga al abrir
-setInterval(syncWithCloud, 5000); // Sincronización automática cada 5 segundos
+// --- ARRANQUE DE ALTA VELOCIDAD ---
+sync(); 
+// Consultamos cada 3 segundos. Es el límite seguro para no bloquear Google.
+setInterval(sync, 3000);
