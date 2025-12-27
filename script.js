@@ -10,37 +10,40 @@ async function sync() {
         if (Array.isArray(data)) {
             const nuevosActivos = data.filter(s => !s.exitTime || String(s.exitTime).trim() === "");
             const nuevoHistorial = data.filter(s => s.exitTime && String(s.exitTime).trim() !== "");
-            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students)) {
+            
+            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students) || JSON.stringify(nuevoHistorial) !== JSON.stringify(history)) {
                 students = nuevosActivos;
                 history = nuevoHistorial;
                 render();
             }
         }
-    } catch (e) { console.warn("Sincronizando..."); }
+    } catch (e) { console.warn("Sync..."); }
 }
 
 function render() {
     const list = document.getElementById("studentList");
-    const hist = document.getElementById("historyList");
+    const histList = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
-    // Actualizar Contadores
-    const counts = { ESPERA: 0, BUSCA: 0, AVISADO: 0 };
+    const counts = { "ESPERA": 0, "EN BUSCA": 0, "AVISADO": 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
-    document.getElementById("countEspera").textContent = counts.ESPERA;
-    document.getElementById("countBusca").textContent = counts.BUSCA;
-    document.getElementById("countAvisado").textContent = counts.AVISADO;
+    document.getElementById("countEspera").textContent = counts["ESPERA"];
+    document.getElementById("countBusca").textContent = counts["EN BUSCA"];
+    document.getElementById("countAvisado").textContent = counts["AVISADO"];
 
     list.innerHTML = "";
     students.forEach(s => {
         const node = temp.content.cloneNode(true);
-        const badge = node.querySelector(".state-badge");
-        badge.textContent = s.stateKey;
-        badge.className = `state-badge state-${s.stateKey}`;
-        node.querySelector(".student-name").textContent = s.name;
-        node.querySelector(".student-course").textContent = `${s.course} | ${s.reason}`;
+        const btn = node.querySelector(".state-btn");
         
-        const doneBtn = node.querySelector(".done-btn");
+        btn.textContent = s.stateKey;
+        const cssClass = s.stateKey.replace(" ", "_");
+        btn.className = `state-btn state-${cssClass}`;
+        
+        node.querySelector(".name").textContent = s.name;
+        node.querySelector(".sub").textContent = `${s.course} | ${s.reason}`;
+        
+        const doneBtn = node.querySelector(".done-check");
         if(s.stateKey === "AVISADO") {
             doneBtn.style.display = "flex";
             doneBtn.onclick = async () => {
@@ -51,25 +54,36 @@ function render() {
             };
         }
 
-        badge.onclick = async () => {
-            const keys = ["ESPERA", "BUSCA", "AVISADO"];
+        btn.onclick = async () => {
+            const keys = ["ESPERA", "EN BUSCA", "AVISADO"];
             s.stateKey = keys[(keys.indexOf(s.stateKey) + 1) % keys.length];
+            document.getElementById('sound-status').play().catch(()=>{});
             render();
             await push(s);
         };
+
+        node.querySelector(".delete-btn").onclick = () => {
+            if(confirm("¿Eliminar?")) {
+                students = students.filter(x => x.id !== s.id);
+                render();
+            }
+        };
+
         list.appendChild(node);
     });
 
-    hist.innerHTML = "";
+    histList.innerHTML = "";
     history.slice(-5).reverse().forEach(s => {
         const node = temp.content.cloneNode(true);
-        node.querySelector(".student-item").style.opacity = "0.4";
-        node.querySelector(".state-badge").textContent = "FIN";
-        node.querySelector(".student-name").textContent = s.name;
-        node.querySelector(".student-course").textContent = s.course;
-        node.querySelector(".student-actions").innerHTML = `<small>${s.exitTime}</small>`;
-        hist.appendChild(node);
+        node.querySelector(".card").style.opacity = "0.4";
+        node.querySelector(".state-btn").textContent = "FIN";
+        node.querySelector(".state-btn").style.background = "#444";
+        node.querySelector(".name").textContent = s.name;
+        node.querySelector(".sub").textContent = s.course;
+        node.querySelector(".actions").innerHTML = `<small>${s.exitTime}</small>`;
+        histList.appendChild(node);
     });
+
     document.getElementById("emptyState").style.display = students.length ? "none" : "block";
 }
 
@@ -88,6 +102,7 @@ document.getElementById("addForm").onsubmit = async (e) => {
         reason: document.getElementById("reasonInput").value,
         stateKey: "ESPERA", timestamp: Date.now().toString(), exitTime: ""
     };
+    document.getElementById('sound-add').play().catch(()=>{});
     students.push(s);
     render();
     await push(s);
