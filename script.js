@@ -2,22 +2,26 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0_Vypdi5SKxLUHfc21
 
 let students = [];
 let history = [];
+let isPaused = false; 
 
 async function sync() {
+    if (isPaused) return;
     try {
         const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
         const data = await res.json();
         if (Array.isArray(data)) {
-            const nuevosActivos = data.filter(s => !s.exitTime || String(s.exitTime).trim() === "");
-            const nuevoHistorial = data.filter(s => s.exitTime && String(s.exitTime).trim() !== "");
-            
-            if (JSON.stringify(nuevosActivos) !== JSON.stringify(students) || JSON.stringify(nuevoHistorial) !== JSON.stringify(history)) {
-                students = nuevosActivos;
-                history = nuevoHistorial;
-                render();
+            const activos = data.filter(s => !s.exitTime || String(s.exitTime).trim() === "");
+            const historial = data.filter(s => s.exitTime && String(s.exitTime).trim() !== "");
+            if (JSON.stringify(activos) !== JSON.stringify(students) || JSON.stringify(historial) !== JSON.stringify(history)) {
+                students = activos; history = historial; render();
             }
         }
-    } catch (e) { console.warn("Sync..."); }
+    } catch (e) { console.warn("Sincronizando..."); }
+}
+
+function pauseSync() {
+    isPaused = true;
+    setTimeout(() => { isPaused = false; }, 5000); 
 }
 
 function render() {
@@ -26,7 +30,10 @@ function render() {
     const temp = document.getElementById("itemTemplate");
     
     const counts = { "ESPERA": 0, "EN BUSCA": 0, "AVISADO": 0 };
-    students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
+    students.forEach(s => { 
+        const key = (s.stateKey || "ESPERA").toUpperCase();
+        if(counts[key] !== undefined) counts[key]++; 
+    });
     
     document.getElementById("countEspera").textContent = counts["ESPERA"];
     document.getElementById("countBusca").textContent = counts["EN BUSCA"];
@@ -37,18 +44,18 @@ function render() {
     students.forEach(s => {
         const node = temp.content.cloneNode(true);
         const btn = node.querySelector(".state-btn");
+        const currentState = (s.stateKey || "ESPERA").toUpperCase();
         
-        btn.textContent = s.stateKey;
-        const cssClass = s.stateKey.replace(/\s+/g, '_');
-        btn.className = `state-btn state-${cssClass}`;
-        
+        btn.textContent = currentState;
+        btn.className = `state-btn state-${currentState.replace(/\s+/g, '_')}`;
         node.querySelector(".name").textContent = s.name;
         node.querySelector(".sub").textContent = `${s.course} | ${s.reason}`;
         
         const doneBtn = node.querySelector(".done-check");
-        if(s.stateKey === "AVISADO") {
+        if(currentState === "AVISADO") {
             doneBtn.style.display = "flex";
             doneBtn.onclick = async () => {
+                pauseSync();
                 s.exitTime = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                 history.push(s);
                 students = students.filter(x => x.id !== s.id);
@@ -58,36 +65,31 @@ function render() {
         }
 
         btn.onclick = async () => {
+            pauseSync(); 
             const keys = ["ESPERA", "EN BUSCA", "AVISADO"];
-            const nextIndex = (keys.indexOf(s.stateKey) + 1) % keys.length;
-            const nextState = keys[nextIndex];
+            let idx = keys.indexOf(currentState);
+            if (idx === -1) idx = 0;
+            const nextState = keys[(idx + 1) % keys.length];
 
-            if (nextState === "AVISADO") {
-                const audioAviso = document.getElementById('sound-status');
-                audioAviso.volume = 1.0;
-                audioAviso.play().catch(()=>{});
-            } else {
-                document.getElementById('sound-status').play().catch(()=>{});
-            }
+            const audio = document.getElementById('sound-status');
+            if(audio) { audio.volume = 1.0; audio.play().catch(()=>{}); }
 
             s.stateKey = nextState;
             render();
             await push(s);
         };
 
-        // BOTÓN ELIMINAR CORREGIDO
         node.querySelector(".delete-btn").onclick = async () => {
-            if(confirm("¿Seguro que deseas eliminar a este alumno de la lista y de la base de datos?")) {
-                const studentId = s.id;
-                // 1. Eliminar visualmente de inmediato
-                students = students.filter(x => x.id !== studentId);
+            if(confirm("¿Eliminar alumno?")) {
+                pauseSync();
+                const id = s.id;
+                students = students.filter(x => x.id !== id);
                 render();
-                
-                // 2. Enviar orden de eliminación al servidor
-                await deleteFromSheet(studentId);
+                const p = new URLSearchParams();
+                p.append("action", "delete"); p.append("id", id);
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
             }
         };
-
         list.appendChild(node);
     });
 
@@ -102,44 +104,27 @@ function render() {
         node.querySelector(".actions").innerHTML = `<small>${s.exitTime}</small>`;
         histList.appendChild(node);
     });
-
     document.getElementById("emptyState").style.display = students.length ? "none" : "block";
 }
 
 async function push(obj) {
-    const params = new URLSearchParams();
-    for (const key in obj) params.append(key, obj[key]);
-    return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
-}
-
-// NUEVA FUNCIÓN PARA ELIMINAR REALMENTE EN GOOGLE SHEETS
-async function deleteFromSheet(id) {
-    const params = new URLSearchParams();
-    params.append("action", "delete"); // Enviamos una acción de eliminación
-    params.append("id", id);
-    return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
+    const p = new URLSearchParams();
+    for (const k in obj) p.append(k, obj[k]);
+    return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: p });
 }
 
 document.getElementById("addForm").onsubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); pauseSync();
     const s = {
         id: "ID-" + Date.now(),
         name: document.getElementById("nameInput").value,
         course: document.getElementById("courseInput").value,
         reason: document.getElementById("reasonInput").value,
-        stateKey: "ESPERA", 
-        timestamp: Date.now().toString(), 
-        exitTime: ""
+        stateKey: "ESPERA", timestamp: Date.now().toString(), exitTime: ""
     };
-    
-    const audioAdd = document.getElementById('sound-add');
-    audioAdd.volume = 1.0;
-    audioAdd.play().catch(()=>{});
-
-    students.push(s);
-    render();
-    await push(s);
-    e.target.reset();
+    const audio = document.getElementById('sound-add');
+    if(audio) { audio.volume = 1.0; audio.play().catch(()=>{}); }
+    students.push(s); render(); await push(s); e.target.reset();
 };
 
 sync();
