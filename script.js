@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFJp86DM9ixVK7dnHNzjc0eXZAeVa60wTGLdSRVRxZjQp5KV2QCUslODH040y1E4hV/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2oH70j0PXLD1b2y3zv-I-91cGvz1dUGH2svNYLdgehz3CkRe54O4D8nMsq4OB0hPf/exec"; 
 
 let students = [];
 let history = [];
