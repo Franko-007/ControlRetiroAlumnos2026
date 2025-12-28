@@ -143,4 +143,4 @@ document.getElementById("addForm").onsubmit = async (e) => {
 };
 
 sync();
-setInterval(sync, 4000);
+setInterval(sync, 9000);
