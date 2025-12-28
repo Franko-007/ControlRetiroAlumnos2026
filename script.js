@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2oH70j0PXLD1b2y3zv-I-91cGvz1dUGH2svNYLdgehz3CkRe54O4D8nMsq4OB0hPf/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0_Vypdi5SKxLUHfc21M8eWflY4bfvAsgCfa5S1gB2QzSsBoPEwuRAYylh9ZB0wJ7Q/exec"; 
 
 let students = [];
 let history = [];
@@ -25,14 +25,13 @@ function render() {
     const histList = document.getElementById("historyList");
     const temp = document.getElementById("itemTemplate");
     
-    // Contadores actualizados (Incluyendo historial)
     const counts = { "ESPERA": 0, "EN BUSCA": 0, "AVISADO": 0 };
     students.forEach(s => { if(counts[s.stateKey] !== undefined) counts[s.stateKey]++; });
     
     document.getElementById("countEspera").textContent = counts["ESPERA"];
     document.getElementById("countBusca").textContent = counts["EN BUSCA"];
     document.getElementById("countAvisado").textContent = counts["AVISADO"];
-    document.getElementById("countFinalizado").textContent = history.length; // Conteo de historial
+    document.getElementById("countFinalizado").textContent = history.length;
 
     list.innerHTML = "";
     students.forEach(s => {
@@ -40,7 +39,7 @@ function render() {
         const btn = node.querySelector(".state-btn");
         
         btn.textContent = s.stateKey;
-        const cssClass = s.stateKey.replace(" ", "_");
+        const cssClass = s.stateKey.replace(/\s+/g, '_');
         btn.className = `state-btn state-${cssClass}`;
         
         node.querySelector(".name").textContent = s.name;
@@ -51,7 +50,6 @@ function render() {
             doneBtn.style.display = "flex";
             doneBtn.onclick = async () => {
                 s.exitTime = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                // Efecto visual instantáneo
                 history.push(s);
                 students = students.filter(x => x.id !== s.id);
                 render();
@@ -61,16 +59,32 @@ function render() {
 
         btn.onclick = async () => {
             const keys = ["ESPERA", "EN BUSCA", "AVISADO"];
-            s.stateKey = keys[(keys.indexOf(s.stateKey) + 1) % keys.length];
-            document.getElementById('sound-status').play().catch(()=>{});
+            const nextIndex = (keys.indexOf(s.stateKey) + 1) % keys.length;
+            const nextState = keys[nextIndex];
+
+            if (nextState === "AVISADO") {
+                const audioAviso = document.getElementById('sound-status');
+                audioAviso.volume = 1.0;
+                audioAviso.play().catch(()=>{});
+            } else {
+                document.getElementById('sound-status').play().catch(()=>{});
+            }
+
+            s.stateKey = nextState;
             render();
             await push(s);
         };
 
-        node.querySelector(".delete-btn").onclick = () => {
-            if(confirm("¿Eliminar?")) {
-                students = students.filter(x => x.id !== s.id);
+        // BOTÓN ELIMINAR CORREGIDO
+        node.querySelector(".delete-btn").onclick = async () => {
+            if(confirm("¿Seguro que deseas eliminar a este alumno de la lista y de la base de datos?")) {
+                const studentId = s.id;
+                // 1. Eliminar visualmente de inmediato
+                students = students.filter(x => x.id !== studentId);
                 render();
+                
+                // 2. Enviar orden de eliminación al servidor
+                await deleteFromSheet(studentId);
             }
         };
 
@@ -98,6 +112,14 @@ async function push(obj) {
     return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
 }
 
+// NUEVA FUNCIÓN PARA ELIMINAR REALMENTE EN GOOGLE SHEETS
+async function deleteFromSheet(id) {
+    const params = new URLSearchParams();
+    params.append("action", "delete"); // Enviamos una acción de eliminación
+    params.append("id", id);
+    return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
+}
+
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const s = {
@@ -105,9 +127,15 @@ document.getElementById("addForm").onsubmit = async (e) => {
         name: document.getElementById("nameInput").value,
         course: document.getElementById("courseInput").value,
         reason: document.getElementById("reasonInput").value,
-        stateKey: "ESPERA", timestamp: Date.now().toString(), exitTime: ""
+        stateKey: "ESPERA", 
+        timestamp: Date.now().toString(), 
+        exitTime: ""
     };
-    document.getElementById('sound-add').play().catch(()=>{});
+    
+    const audioAdd = document.getElementById('sound-add');
+    audioAdd.volume = 1.0;
+    audioAdd.play().catch(()=>{});
+
     students.push(s);
     render();
     await push(s);
