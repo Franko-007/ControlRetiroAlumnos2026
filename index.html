@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Retiro Escolar NSG</title>
     <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
     <audio id="sound-add" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
@@ -15,16 +16,16 @@
             <span class="header-icon">🎒</span>
             <h1>Control de Retiro Escolar NSG</h1>
         </div>
-        <p>Toca un alumno para cambiar su estado.</p>
+        <p>Toca un Alumno para Cambiar su Estado.</p>
     </header>
 
     <main class="container">
         <form id="addForm" class="form-container">
-            <input type="text" id="nameInput" placeholder="Nombre y apellido" required>
+            <input type="text" id="nameInput" placeholder="Nombre y apellido del alumno" required>
             
             <div class="input-group">
                 <select id="courseInput" required>
-                    <option value="" disabled selected>Curso</option>
+                    <option value="" disabled selected>Seleccionar Curso</option>
                     <optgroup label="Párvulos">
                         <option value="Pre Kinder A">Pre Kinder A</option><option value="Pre Kinder B">Pre Kinder B</option>
                         <option value="Kinder A">Kinder A</option><option value="Kinder B">Kinder B</option>
@@ -48,7 +49,7 @@
                 </select>
 
                 <select id="reasonInput" required>
-                    <option value="" disabled selected>Motivo</option>
+                    <option value="" disabled selected>Motivo del Retiro</option>
                     <option value="Cita Médica">Cita Médica</option>
                     <option value="Trámite Personal">Trámite Personal</option>
                     <option value="Enfermedad">Enfermedad</option>
@@ -57,7 +58,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-primary">Agregar</button>
+            <button type="submit" class="btn-primary">Registrar Salida</button>
 
             <div class="stats-bar">
                 <div class="stat-item espera">
@@ -76,18 +77,31 @@
         </form>
 
         <ul id="studentList" class="student-list"></ul>
+        
         <div id="emptyState" class="empty-msg">
-            <span>❌ Sin alumnos activos.</span>
+            <span>❌ Sin alumnos activos en este momento.</span>
         </div>
 
+        <section class="report-section">
+            <div class="report-card">
+                <div class="report-info">
+                    <h3>🏆 Ranking Mensual (Más retiros)</h3>
+                    <p id="topAlumnoDisplay">Cargando estadísticas...</p>
+                </div>
+                <button onclick="exportToPDF()" class="btn-export">
+                    <span>📄</span> Generar Informe
+                </button>
+            </div>
+        </section>
+
         <section class="history-container">
-            <h3>📜 Historial de Retirados (Hoy)</h3>
+            <h3>📜 Historial Reciente (Finalizados)</h3>
             <ul id="historyList" class="student-list"></ul>
         </section>
     </main>
 
     <footer class="footer">
-        <p>2026 Derechos Reservados - Por Franco</p>
+        <p>2026 Derechos Reservados - Sistema de Control NSG - Desarrollado por Franco</p>
     </footer>
 
     <template id="itemTemplate">
@@ -98,8 +112,8 @@
                 <span class="sub"></span>
             </div>
             <div class="actions">
-                <button class="done-check">✅</button>
-                <button class="delete-btn">🗑️</button>
+                <button class="done-check" title="Finalizar retiro" style="display: none;">✅</button>
+                <button class="delete-btn" title="Eliminar registro">🗑️</button>
             </div>
         </li>
     </template>
