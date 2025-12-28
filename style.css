@@ -15,6 +15,7 @@
 
 body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px; }
 
+/* HEADER */
 .app-header { text-align: center; margin-bottom: 30px; }
 .header-main { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .header-icon { font-size: 2.2rem; }
@@ -23,19 +24,24 @@ body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px;
 
 .container { max-width: 550px; margin: 0 auto; }
 
+/* FORMULARIO */
 .form-container { 
     background: var(--card-bg); 
     padding: 22px; 
     border-radius: 14px; 
     margin-bottom: 25px; 
     border: 1px solid #374151;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 input, select {
     width: 100%; padding: 14px; margin-bottom: 12px;
     border-radius: 10px; border: 1px solid #4b5563;
     background: var(--input-bg); color: white; font-size: 1rem; outline: none;
+    transition: border-color 0.2s;
 }
+
+input:focus, select:focus { border-color: var(--blue-btn); }
 
 .input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -43,9 +49,13 @@ input, select {
     width: 100%; padding: 15px; background: var(--blue-btn);
     color: white; border: none; border-radius: 10px;
     font-weight: 700; font-size: 1.1rem; cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
 }
 
-/* --- SECCIÓN DE ESTADÍSTICAS MEJORADA --- */
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:hover { background: #2563eb; }
+
+/* ESTADÍSTICAS RÁPIDAS (DOTS) */
 .stats-bar { 
     display: flex; justify-content: center; gap: 8px; font-size: 0.8rem; 
     padding-top: 20px; margin-top: 20px; border-top: 1px solid #4b5563; flex-wrap: wrap;
@@ -57,10 +67,8 @@ input, select {
 }
 
 .stat-item b { margin-left: 5px; font-weight: 800; font-size: 0.9rem; }
-
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 
-/* Variantes de color para los items de la barra */
 .stat-item.espera { border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
 .stat-item.espera .dot { background: var(--red); box-shadow: 0 0 6px var(--red); }
 
@@ -73,30 +81,103 @@ input, select {
 .stat-item.finalizado { border-color: rgba(107, 114, 128, 0.3); color: var(--text-muted); }
 .stat-item.finalizado .dot { background: var(--gray); }
 
-/* --- FIN SECCIÓN ESTADÍSTICAS --- */
+/* SECCIÓN DE REPORTES Y RANKING */
+.report-section { margin-top: 25px; margin-bottom: 25px; }
 
-.red { background: var(--red); }
-.yellow { background: var(--yellow); }
-.green { background: var(--green); }
-.gray { background: var(--gray); }
+.report-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    display: flex;
+    flex-direction: column; 
+    gap: 15px;
+}
 
+.report-header-box {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.report-info h3 { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.05em; }
+
+/* DISEÑO DEL RANKING */
+.ranking-grid {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+}
+
+.rank-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+}
+
+.rank-card:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--blue-btn); }
+
+.rank-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.rank-number { font-weight: 800; color: var(--blue-btn); font-size: 0.9rem; width: 18px; }
+.rank-name { flex-grow: 1; font-weight: 500; color: var(--text-main); font-size: 0.95rem; text-align: left; }
+.rank-count { font-weight: 700; color: var(--blue-btn); font-size: 0.9rem; }
+.rank-count small { font-weight: 400; color: var(--text-muted); font-size: 0.75rem; }
+
+.rank-bar-container { height: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; overflow: hidden; }
+.rank-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 2px; transition: width 1s ease-out; }
+
+/* BOTÓN GENERAR INFORME (Igual al estilo de Registrar Salida) */
+.btn-export {
+    width: 100%;
+    padding: 15px;
+    background: var(--blue-btn);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-export:hover { background: #2563eb; }
+.btn-export:active { transform: scale(0.98); }
+
+/* TARJETAS DE ALUMNOS */
 .card {
     background: var(--card-bg); padding: 16px; border-radius: 12px;
     margin-bottom: 12px; display: flex; align-items: center; border: 1px solid #374151;
+    transition: transform 0.2s;
 }
+
+.card:hover { transform: translateY(-2px); border-color: #4b5563; }
 
 .state-btn {
     min-width: 105px; padding: 12px 5px; border-radius: 8px;
     text-align: center; font-weight: 800; font-size: 0.7rem;
     margin-right: 15px; text-transform: uppercase; border: none; cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .state-ESPERA { background: var(--red); color: white; }
 .state-EN_BUSCA { background: var(--yellow); color: #000; }
 .state-AVISADO { background: var(--green); color: white; }
 
-.info { flex-grow: 1; }
-.name { display: block; font-weight: 700; font-size: 1.15rem; margin-bottom: 2px; }
+.info { flex-grow: 1; text-align: left; }
+.name { display: block; font-weight: 700; font-size: 1.15rem; margin-bottom: 2px; color: var(--text-main); }
 .sub { color: var(--text-muted); font-size: 0.85rem; }
 
 .actions { display: flex; gap: 12px; align-items: center; }
@@ -104,26 +185,31 @@ input, select {
 .done-check {
     background: white; border: none; width: 45px; height: 45px; border-radius: 8px;
     font-size: 1.8rem; cursor: pointer; display: none; align-items: center;
-    justify-content: center; padding: 0; line-height: 1; transition: transform 0.1s;
+    justify-content: center; padding: 0; transition: all 0.2s;
 }
 
+.done-check:hover { background: #f3f4f6; transform: scale(1.05); }
 .done-check:active { transform: scale(0.9); }
 
-.delete-btn { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.3; }
+.delete-btn { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.3; transition: opacity 0.2s; }
+.delete-btn:hover { opacity: 1; color: var(--red); }
 
 .empty-msg {
-    text-align: center; padding: 30px; background: rgba(31, 41, 55, 0.5);
-    border-radius: 14px; border: 1px dashed #4b5563; color: var(--text-muted);
+    text-align: center; padding: 40px 20px; background: rgba(31, 41, 55, 0.4);
+    border-radius: 14px; border: 2px dashed #374151; color: var(--text-muted);
 }
 
+/* HISTORIAL */
 .history-container { margin-top: 40px; }
-.history-container h3 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-muted); }
+.history-container h3 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
 
-.footer { text-align: center; margin-top: 60px; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid #374151; padding-top: 20px; }
+.footer { text-align: center; margin-top: 60px; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid #374151; padding-top: 25px; padding-bottom: 20px; }
 
+/* RESPONSIVE */
 @media (max-width: 500px) {
+    body { padding: 15px; }
     .input-group { grid-template-columns: 1fr; }
-    .state-btn { min-width: 90px; font-size: 0.65rem; }
-    .stats-bar { gap: 5px; }
-    .stat-item { padding: 4px 8px; font-size: 0.75rem; }
+    .card { padding: 12px; }
+    .state-btn { min-width: 85px; font-size: 0.65rem; margin-right: 10px; }
+    .name { font-size: 1rem; }
 }
