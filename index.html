@@ -5,117 +5,345 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Retiro Escolar NSG</title>
     <link rel="stylesheet" href="style.css">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <audio id="sound-add" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <audio id="sound-status" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3"></audio>
+    <audio id="sound-success" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+
+    <div class="background-gradient"></div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <header class="app-header">
-        <div class="header-main">
-            <span class="header-icon">🎒</span>
-            <h1>Control de Retiro Escolar NSG</h1>
+        <div class="header-container">
+            <div class="header-main">
+                <div class="icon-container">
+                    <span class="header-icon">🎒</span>
+                </div>
+                <div class="header-text">
+                    <h1>Control de Retiro Escolar NSG</h1>
+                    <p class="header-subtitle">Sistema de Gestión de Salidas</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <p class="header-instructions">Toca un Alumno para Cambiar su Estado.</p>
+            </div>
         </div>
-        <p>Toca un Alumno para Cambiar su Estado.</p>
     </header>
 
     <main class="container">
-        <form id="addForm" class="form-container">
-            <input type="text" id="nameInput" placeholder="Nombre y apellido del alumno" required>
-            
-            <div class="input-group">
-                <select id="courseInput" required>
-                    <option value="" disabled selected>Seleccionar Curso</option>
-                    <optgroup label="Párvulos">
-                        <option value="Pre Kinder A">Pre Kinder A</option><option value="Pre Kinder B">Pre Kinder B</option>
-                        <option value="Kinder A">Kinder A</option><option value="Kinder B">Kinder B</option>
-                    </optgroup>
-                    <optgroup label="Básica">
-                        <option value="1° Básico A">1° Básico A</option><option value="1° Básico B">1° Básico B</option>
-                        <option value="2° Básico A">2° Básico A</option><option value="2° Básico B">2° Básico B</option>
-                        <option value="3° Básico A">3° Básico A</option><option value="3° Básico B">3° Básico B</option>
-                        <option value="4° Básico A">4° Básico A</option><option value="4° Básico B">4° Básico B</option>
-                        <option value="5° Básico A">5° Básico A</option><option value="5° Básico B">5° Básico B</option>
-                        <option value="6° Básico A">6° Básico A</option><option value="6° Básico B">6° Básico B</option>
-                        <option value="7° Básico A">7° Básico A</option><option value="7° Básico B">7° Básico B</option>
-                        <option value="8° Básico A">8° Básico A</option><option value="8° Básico B">8° Básico B</option>
-                    </optgroup>
-                    <optgroup label="Media">
-                        <option value="I° Medio A">I° Medio A</option><option value="I° Medio B">I° Medio B</option>
-                        <option value="II° Medio A">II° Medio A</option><option value="II° Medio B">II° Medio B</option>
-                        <option value="III° Medio A">III° Medio A</option><option value="III° Medio B">III° Medio B</option>
-                        <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
-                    </optgroup>
-                </select>
-
-                <select id="reasonInput" required>
-                    <option value="" disabled selected>Motivo del Retiro</option>
-                    <option value="Cita Médica">Cita Médica</option>
-                    <option value="Trámite Personal">Trámite Personal</option>
-                    <option value="Enfermedad">Enfermedad</option>
-                    <option value="Retiro Anticipado">Retiro Anticipado</option>
-                    <option value="Otro">Otro</option>
-                </select>
+        <!-- Dashboard KPIs -->
+        <section class="dashboard-kpis">
+            <div class="kpi-card">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Total Activos</span>
+                    <span class="kpi-value" id="kpiTotal">0</span>
+                </div>
             </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">⏱️</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Tiempo Promedio</span>
+                    <span class="kpi-value" id="kpiAvgTime">0 min</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">✅</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Completados Hoy</span>
+                    <span class="kpi-value" id="kpiCompleted">0</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">⚠️</div>
+                <div class="kpi-content">
+                    <span class="kpi-label">Tiempo Excedido</span>
+                    <span class="kpi-value" id="kpiExceeded">0</span>
+                </div>
+            </div>
+        </section>
 
-            <button type="submit" class="btn-primary">Registrar Salida</button>
+        <form id="addForm" class="form-container" autocomplete="off">
+            <div class="form-header">
+                <h2>Registrar Nueva Salida</h2>
+            </div>
+            
+            <div class="form-body">
+                <div class="input-wrapper">
+                    <label for="nameInput">Nombre del Alumno</label>
+                    <input type="text" id="nameInput" placeholder="Nombre y apellido del alumno" required>
+                </div>
+                
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <label for="courseInput">Curso</label>
+                        <select id="courseInput" required>
+                            <option value="" disabled selected>Seleccionar Curso</option>
+                            <optgroup label="Párvulos">
+                                <option value="Pre Kinder A">Pre Kinder A</option><option value="Pre Kinder B">Pre Kinder B</option>
+                                <option value="Kinder A">Kinder A</option><option value="Kinder B">Kinder B</option>
+                            </optgroup>
+                            <optgroup label="Básica">
+                                <option value="1° Básico A">1° Básico A</option><option value="1° Básico B">1° Básico B</option>
+                                <option value="2° Básico A">2° Básico A</option><option value="2° Básico B">2° Básico B</option>
+                                <option value="3° Básico A">3° Básico A</option><option value="3° Básico B">3° Básico B</option>
+                                <option value="4° Básico A">4° Básico A</option><option value="4° Básico B">4° Básico B</option>
+                                <option value="5° Básico A">5° Básico A</option><option value="5° Básico B">5° Básico B</option>
+                                <option value="6° Básico A">6° Básico A</option><option value="6° Básico B">6° Básico B</option>
+                                <option value="7° Básico A">7° Básico A</option><option value="7° Básico B">7° Básico B</option>
+                                <option value="8° Básico A">8° Básico A</option><option value="8° Básico B">8° Básico B</option>
+                            </optgroup>
+                            <optgroup label="Media">
+                                <option value="I° Medio A">I° Medio A</option><option value="I° Medio B">I° Medio B</option>
+                                <option value="II° Medio A">II° Medio A</option><option value="II° Medio B">II° Medio B</option>
+                                <option value="III° Medio A">III° Medio A</option><option value="III° Medio B">III° Medio B</option>
+                                <option value="IV° Medio A">IV° Medio A</option><option value="IV° Medio B">IV° Medio B</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="reasonInput">Motivo</label>
+                        <select id="reasonInput" required>
+                            <option value="" disabled selected>Motivo del Retiro</option>
+                            <option value="Cita Médica">Cita Médica</option>
+                            <option value="Trámite Personal">Trámite Personal</option>
+                            <option value="Enfermedad">Enfermedad</option>
+                            <option value="Retiro Anticipado">Retiro Anticipado</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <span class="btn-icon">➕</span>
+                    <span>Registrar Salida</span>
+                </button>
+            </div>
 
             <div class="stats-bar">
                 <div class="stat-item espera">
-                    <i class="dot"></i> Espera: <b id="countEspera">0</b>
+                    <i class="dot"></i> 
+                    <span class="stat-label">Espera:</span>
+                    <b id="countEspera">0</b>
                 </div>
                 <div class="stat-item busca">
-                    <i class="dot"></i> En Busca: <b id="countBusca">0</b>
+                    <i class="dot"></i> 
+                    <span class="stat-label">En Busca:</span>
+                    <b id="countBusca">0</b>
                 </div>
                 <div class="stat-item avisado">
-                    <i class="dot"></i> Avisado: <b id="countAvisado">0</b>
+                    <i class="dot"></i> 
+                    <span class="stat-label">Avisado:</span>
+                    <b id="countAvisado">0</b>
                 </div>
                 <div class="stat-item finalizado">
-                    <i class="dot"></i> Finalizados: <b id="countFinalizado">0</b>
+                    <i class="dot"></i> 
+                    <span class="stat-label">Finalizados:</span>
+                    <b id="countFinalizado">0</b>
                 </div>
             </div>
         </form>
 
-        <ul id="studentList" class="student-list"></ul>
-        
-        <div id="emptyState" class="empty-msg">
-            <span>❌ Sin alumnos activos en este momento.</span>
+        <!-- Filtros y Búsqueda -->
+        <section class="filters-section">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Buscar alumno por nombre...">
+            </div>
+            <div class="filter-controls">
+                <select id="filterCourse" class="filter-select">
+                    <option value="">Todos los Cursos</option>
+                    <option value="Pre Kinder">Pre Kinder</option>
+                    <option value="Kinder">Kinder</option>
+                    <option value="Básico">Básico</option>
+                    <option value="Medio">Medio</option>
+                </select>
+                <select id="filterState" class="filter-select">
+                    <option value="">Todos los Estados</option>
+                    <option value="ESPERA">En Espera</option>
+                    <option value="EN BUSCA">En Busca</option>
+                    <option value="AVISADO">Avisado</option>
+                </select>
+                <select id="sortBy" class="filter-select">
+                    <option value="time">Por Hora (Reciente)</option>
+                    <option value="name">Por Nombre (A-Z)</option>
+                    <option value="course">Por Curso</option>
+                </select>
+            </div>
+        </section>
+
+        <div class="students-section">
+            <div class="section-header">
+                <h3>📋 Alumnos Activos</h3>
+                <span class="section-badge" id="activeBadge">0</span>
+            </div>
+            <ul id="studentList" class="student-list"></ul>
+            
+            <div id="emptyState" class="empty-msg">
+                <div class="empty-icon">📚</div>
+                <span class="empty-text">Sin alumnos activos en este momento.</span>
+                <p class="empty-subtext">Los nuevos registros aparecerán aquí</p>
+            </div>
         </div>
 
         <section class="report-section">
             <div class="report-card">
-                <div class="report-info">
-                    <h3>🏆 Ranking Mensual (Más retiros)</h3>
+                <div class="report-header">
+                    <div class="report-info">
+                        <div class="report-icon">🏆</div>
+                        <div>
+                            <h3>Ranking Mensual</h3>
+                            <p class="report-subtitle">Estadísticas de retiros más frecuentes</p>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button onclick="exportToPDF()" class="btn-export">
+                            <span>📄</span> 
+                            <span>PDF</span>
+                        </button>
+                        <button onclick="exportToExcel()" class="btn-export">
+                            <span>📊</span> 
+                            <span>Excel</span>
+                        </button>
+                        <button onclick="printReport()" class="btn-export">
+                            <span>🖨️</span> 
+                            <span>Imprimir</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="report-body">
                     <p id="topAlumnoDisplay">Cargando estadísticas...</p>
                 </div>
-                <button onclick="exportToPDF()" class="btn-export">
-                    <span>📄</span> Generar Informe
-                </button>
             </div>
         </section>
 
+        <!-- Timeline de Actividad -->
+        <section class="timeline-section">
+            <div class="section-header">
+                <h3>🕐 Línea de Tiempo - Hoy</h3>
+                <span class="section-badge-secondary" id="timelineDate"></span>
+            </div>
+            <div id="timelineContainer" class="timeline-container"></div>
+        </section>
+
+        <!-- Alumnos Retirados Hoy -->
+        <section class="withdrawn-section">
+            <div class="section-header">
+                <h3>✅ Alumnos Retirados Hoy</h3>
+                <div class="history-controls">
+                    <span class="section-badge" id="withdrawnTodayBadge">0</span>
+                    <button class="btn-toggle" id="toggleWithdrawn">
+                        <span>Ocultar</span>
+                        <span class="toggle-icon">▼</span>
+                    </button>
+                </div>
+            </div>
+            <div id="withdrawnToday" class="withdrawn-grid"></div>
+            <div id="emptyWithdrawn" class="empty-msg" style="display: none;">
+                <div class="empty-icon">📋</div>
+                <span class="empty-text">No hay alumnos retirados hoy.</span>
+                <p class="empty-subtext">Los retiros finalizados aparecerán aquí</p>
+            </div>
+        </section>
+
+        <!-- Historial Completo -->
         <section class="history-container">
-            <h3>📜 Historial Reciente (Finalizados)</h3>
-            <ul id="historyList" class="student-list"></ul>
+            <div class="section-header">
+                <h3>📜 Historial Completo</h3>
+                <div class="history-controls">
+                    <span class="section-badge-secondary">Todos los registros</span>
+                    <button class="btn-toggle" id="toggleHistory">
+                        <span>Ver historial</span>
+                        <span class="toggle-icon">▼</span>
+                    </button>
+                </div>
+            </div>
+            <ul id="historyList" class="student-list history-list"></ul>
         </section>
     </main>
 
     <footer class="footer">
-        <p>2026 Derechos Reservados - Sistema de Control NSG - Desarrollado por Franco</p>
+        <div class="footer-content">
+            <p>© 2026 Derechos Reservados - Sistema de Control NSG</p>
+            <p class="footer-dev">Desarrollado por Franco</p>
+        </div>
     </footer>
 
     <template id="itemTemplate">
         <li class="card">
+            <div class="card-time-badge"></div>
             <button class="state-btn"></button>
             <div class="info">
                 <span class="name"></span>
                 <span class="sub"></span>
+                <div class="progress-indicator">
+                    <div class="progress-bar"></div>
+                </div>
             </div>
             <div class="actions">
                 <button class="done-check" title="Finalizar retiro" style="display: none;">✅</button>
                 <button class="delete-btn" title="Eliminar registro">🗑️</button>
             </div>
         </li>
+    </template>
+
+    <template id="withdrawnTemplate">
+        <div class="withdrawn-card">
+            <div class="withdrawn-header">
+                <div class="withdrawn-name"></div>
+                <div class="withdrawn-status">✅ Retirado</div>
+            </div>
+            <div class="withdrawn-details">
+                <div class="withdrawn-detail">
+                    <span class="detail-icon">🎓</span>
+                    <span class="detail-label">Curso:</span>
+                    <span class="detail-value withdrawn-course"></span>
+                </div>
+                <div class="withdrawn-detail">
+                    <span class="detail-icon">📋</span>
+                    <span class="detail-label">Motivo:</span>
+                    <span class="detail-value withdrawn-reason"></span>
+                </div>
+                <div class="withdrawn-detail">
+                    <span class="detail-icon">🕐</span>
+                    <span class="detail-label">Entrada:</span>
+                    <span class="detail-value withdrawn-entry"></span>
+                </div>
+                <div class="withdrawn-detail">
+                    <span class="detail-icon">🚪</span>
+                    <span class="detail-label">Salida:</span>
+                    <span class="detail-value withdrawn-exit"></span>
+                </div>
+                <div class="withdrawn-detail">
+                    <span class="detail-icon">⏱️</span>
+                    <span class="detail-label">Duración:</span>
+                    <span class="detail-value withdrawn-duration"></span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="timelineTemplate">
+        <div class="timeline-item">
+            <div class="timeline-time"></div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <span class="timeline-name"></span>
+                <span class="timeline-action"></span>
+            </div>
+        </div>
     </template>
 
     <script src="script.js"></script>
